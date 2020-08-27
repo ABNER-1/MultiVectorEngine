@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/MultiVector.dir/main.cpp.o  -o MultiVector  -L/home/abner/workspace/MultiVector/sdk -Wl,-rpath,/home/abner/workspace/MultiVector/sdk -lmilvus_sdk -lpthread 
