@@ -39,4 +39,27 @@ MultiVectorEngine::CreateCollection(std::string collection_name, milvus::MetricT
     return milvus::Status::OK();
 }
 
+Status
+MultiVectorEngine::Insert(const std::string &collection_name,
+                          const std::vector<std::vector<milvus::Entity> > &entity_arrays,
+                          std::vector<int64_t> &id_array) {
+    for (auto i = 0; i < entity_arrays.size(); ++i) {
+        auto &entity_array = entity_arrays[i];
+        std::string tmp_collection_name = GenerateChildCollectionName(collection_name, i);
+        auto status = this->conn_ptr_->Insert(tmp_collection_name, "", entity_array, id_array);
+        if (!status.ok()) {
+            return status;
+        }
+    }
+    return milvus::Status::OK();
+}
+
+Status
+MultiVectorEngine::Search(const std::string &collection_name, std::vector<float> weight,
+                          const std::vector<std::vector<milvus::Entity>> &entity_array,
+                          int64_t topk, milvus::TopKQueryResult &topk_query_results) {
+    return milvus::Status();
+}
+
+
 } // namespace mv
