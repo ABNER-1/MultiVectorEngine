@@ -1,2 +1,17 @@
 .idea
+
+# CLion files
 cmake-build-debug
+cmake-build-release
+cmake_build
+.vscode
+*.a
+*.so
+*.so.*
+*.o
+*.tar.gz
+*.lo
+*.log
+*.pyc
+*.swp
+
