@@ -8,7 +8,9 @@ namespace multivector {
 
 class MultiVectorCollectionIP : MultiVectorCollection {
  public:
-    MultiVectorCollectionIP(const std::shared_ptr<milvus::Connection> server_conn, const std::string collection_name) : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::IP) {}
+    MultiVectorCollectionIP(const std::shared_ptr<milvus::Connection> server_conn,
+                            const std::string collection_name)
+        : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::IP) {}
 
     Status
     CreateCollection(std::vector<int64_t> dimensions,

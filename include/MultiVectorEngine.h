@@ -18,12 +18,11 @@ class MultiVectorEngine : BaseEngine {
                      std::vector<int64_t> dimensions,
                      std::vector<int64_t> index_file_sizes) override;
 
+    // todo: 1 find collection_name in collections_
+    // todo: 2 for id in collections_[collection_name].second:
+    //  do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
     Status
-    DropCollection(std::string collection_name) override {
-        // todo: 1 find collection_name in collections_
-        // todo: 2 for id in collections_[collection_name].second:
-        //  do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
-    }
+    DropCollection(std::string collection_name) override;
 
     Status
     Insert(const std::string &collection_name,

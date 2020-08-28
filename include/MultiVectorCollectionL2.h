@@ -8,7 +8,9 @@ namespace multivector {
 
 class MultiVectorCollectionL2 : MultiVectorCollection {
  public:
-    MultiVectorCollectionL2(const std::shared_ptr<milvus::Connection> server_conn, const std::string collection_name) : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::L2) {}
+    MultiVectorCollectionL2(const std::shared_ptr<milvus::Connection> server_conn,
+                            const std::string collection_name)
+        : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::L2) {}
 
     Status
     CreateCollection(std::vector<int64_t> dimensions,

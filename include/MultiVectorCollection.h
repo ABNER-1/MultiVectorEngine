@@ -9,7 +9,9 @@ namespace multivector {
 class MultiVectorCollection {
  public:
     MultiVectorCollection() = delete;
-    MultiVectorCollection(const std::shared_ptr<milvus::Connection> server_conn, const std::string collection_name, const milvus::MetricType metric_type) : collection_name_(collection_name), metric_type_(metric_type), conn_ptr_(server_conn) {}
+    MultiVectorCollection(const std::shared_ptr<milvus::Connection> server_conn,
+                          const std::string collection_name, const milvus::MetricType metric_type)
+        : collection_name_(collection_name), metric_type_(metric_type), conn_ptr_(server_conn) {}
 
     virtual Status
     CreateCollection(std::vector<int64_t> dimensions,
@@ -36,16 +38,16 @@ class MultiVectorCollection {
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, milvus::TopKQueryResult &topk_query_results) = 0;
 
- private:
-    static std::string
-    GenerateChildCollectionName(const std::string &collection_prefix, int64_t idx) {
-        return collection_prefix + "_" + std::to_string(idx);
+ protected:
+    std::string
+    GenerateChildCollectionName(int64_t idx) {
+        return this->collection_name_ + "_" + std::to_string(idx);
     }
 
- private:
+ protected:
     std::string collection_name_;
     milvus::MetricType metric_type_;
-    std::vector<int64_t> child_collection_ids_;
+    std::vector<std::string> child_collection_names_;
     std::shared_ptr<milvus::Connection> conn_ptr_ = nullptr;
 };
 
