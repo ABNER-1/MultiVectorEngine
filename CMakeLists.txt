@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.13)
 project(MultiVector)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -13,12 +13,15 @@ include_directories(include)
 add_subdirectory(src)
 link_directories(${SDK_HOME})
 
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 set(multi_vector_srcs
         src/MultiVectorEngine.cpp)
 
 
 add_executable(MultiVector main.cpp
-               ${multi_vector_srcs})
+        ${multi_vector_srcs})
 
 target_link_libraries(MultiVector
         milvus_sdk

@@ -4,10 +4,7 @@
 cmake-build-debug
 cmake-build-release
 cmake_build
-
-
 .vscode
-
 *.a
 *.so
 *.so.*
@@ -17,5 +14,4 @@ cmake_build
 *.log
 *.pyc
 *.swp
-
 
