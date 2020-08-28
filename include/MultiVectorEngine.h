@@ -1,4 +1,5 @@
 #pragma once
+
 #include <unordered_map>
 #include "MilvusApi.h"
 #include "Status.h"
@@ -45,6 +46,12 @@ class MultiVectorEngine : BaseEngine {
            int64_t topk, const std::string &extra_params,
            milvus::TopKQueryResult &topk_query_results) override;
 
+ private:
+    Status
+    createCollectionPtr(const std::string &collection_name, milvus::MetricType metric_type);
+
+    MultiVectorCollectionPtr
+    getOrFetchCollectionPtr(const std::string &collection_name);
  private:
     // maintain collection list for all collections
     // collections.first is the user provided collection name
