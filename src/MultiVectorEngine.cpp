@@ -1,4 +1,6 @@
 #include "MultiVectorEngine.h"
+#include "MultiVectorCollection.h"
+#include "MultiVectorCollectionL2.h"
 
 
 namespace milvus {

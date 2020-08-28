@@ -20,6 +20,7 @@ set(multi_vector_srcs
         src/MultiVectorEngine.cpp
         src/MultiVectorCollectionIP.cpp
         src/MultiVectorCollectionL2.cpp
+        src/Utils.cpp
         )
 
 
