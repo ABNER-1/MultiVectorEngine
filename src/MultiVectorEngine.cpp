@@ -1,7 +1,6 @@
 #include "MultiVectorEngine.h"
 
 
-
 namespace milvus {
 namespace multivector {
 

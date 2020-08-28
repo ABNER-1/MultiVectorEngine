@@ -3,6 +3,7 @@
 #include "Status.h"
 #include "BaseEngine.h"
 
+
 namespace milvus {
 namespace multivector {
 
@@ -10,11 +11,11 @@ class MultiVectorEngine : BaseEngine {
  public:
     MultiVectorEngine(const std::string &ip, const std::string &port) {}
 
-
     Status
     CreateCollection(std::string collection_name, milvus::MetricType metric_type,
                      std::vector<int64_t> dimensions,
                      std::vector<int64_t> index_file_sizes) override;
+
     Status
     DropCollection(std::string collection_name);
 
@@ -36,6 +37,7 @@ class MultiVectorEngine : BaseEngine {
     Search(const std::string &collection_name, std::vector<float> weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, milvus::TopKQueryResult &topk_query_results);
+
  private:
     static std::string
     GenerateChildCollectionName(const std::string &collection_prefix, int64_t idx) {
