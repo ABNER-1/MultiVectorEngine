@@ -27,7 +27,7 @@ class MultiVectorCollectionL2 : MultiVectorCollection {
     Delete(std::vector<int64_t> &id_arrays) override;
 
     Status
-    CreateIndex(std::string param) override;
+    CreateIndex(milvus::IndexType index_type, std::string extra_params) override;
 
     Status
     DropIndex() override;

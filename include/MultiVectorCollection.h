@@ -28,7 +28,7 @@ class MultiVectorCollection {
     Delete(std::vector<int64_t> &id_arrays) = 0;
 
     virtual Status
-    CreateIndex(std::string param) = 0;
+    CreateIndex(milvus::IndexType index_type, std::string extra_params) = 0;
 
     virtual Status
     DropIndex() = 0;
