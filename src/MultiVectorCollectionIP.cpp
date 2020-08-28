@@ -43,10 +43,9 @@ MultiVectorCollectionIP::Insert(const std::vector<milvus::multivector::RowEntity
         return Status(StatusCode::InvalidAgument, err_msg);
     }
     std::vector<milvus::Entity> new_arrays(nq);
-    auto status = this->mergeRowEntityFromEntites(entity_arrays, new_arrays);
+    auto status = this->mergeAndNormalize(entity_arrays, new_arrays);
     if (status.ok()) {
-        //
-        std::cout << "maybe never wrong." << std::endl;
+        std::cout << "[ERROR] merge and normalize error: " << status.message() << std::endl;
     }
     return this->conn_ptr_->Insert(this->collection_name_, "", new_arrays, id_arrays);
 }
@@ -73,9 +72,13 @@ MultiVectorCollectionIP::Search(const std::vector<float> &weight,
                                 const std::vector<RowEntity> &entity_array,
                                 int64_t topk, milvus::TopKQueryResult &topk_query_results) {
     std::vector<milvus::Entity> new_arrays(entity_array.size());
-    auto status = this->mergeRowEntityFromEntites(entity_array, new_arrays);
+    auto status = this->mergeAndNormalize(entity_array, new_arrays);
     if (status.ok()) {
-        std::cout << "maybe never wrong." << std::endl;
+        std::cout << "[ERROR] merge and normalize error: " << status.message() << std::endl;
+    }
+    status = this->boostEntitesByWeight(weight, entity_array, new_arrays);
+    if (status.ok()) {
+        std::cout << "[ERROR] boost entities by weight error: " << status.message() << std::endl;
     }
     this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, "", topk_query_results);
 
@@ -104,6 +107,26 @@ MultiVectorCollectionIP::mergeRowEntityFromEntites(const std::vector<RowEntity> 
     return Status::OK();
 }
 
+
+Status
+MultiVectorCollectionIP::normalizationEntites(std::vector<milvus::Entity> &entities) {
+    return Status::OK();
+}
+
+Status
+MultiVectorCollectionIP::boostEntitesByWeight(const std::vector<float> &weight,
+                                              const std::vector<RowEntity> &entity_arrays,
+                                              std::vector<Entity> &new_entities) {
+    return Status::OK();
+}
+
+Status
+MultiVectorCollectionIP::mergeAndNormalize(const std::vector<milvus::multivector::RowEntity> &entity_arrays,
+                                           std::vector<milvus::Entity> &new_entities) {
+    auto status = mergeRowEntityFromEntites(entity_arrays, new_entities);
+    status = normalizationEntites(new_entities);
+    return status;
+}
 
 } // namespace multivector
 } // namespace milvus

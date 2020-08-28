@@ -38,6 +38,10 @@ class MultiVectorCollectionIP : MultiVectorCollection {
            int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
  private:
     inline Status
+    mergeAndNormalize(const std::vector<RowEntity> &entity_arrays,
+                      std::vector<milvus::Entity> &new_entities);
+
+    inline Status
     mergeRowEntityFromEntites(const std::vector<RowEntity> &entity_arrays,
                               std::vector<milvus::Entity> &new_entities);
 
@@ -45,7 +49,9 @@ class MultiVectorCollectionIP : MultiVectorCollection {
     normalizationEntites(std::vector<milvus::Entity> &entities);
 
     inline Status
-    BoostEntitesByWeight(const std::vector<float> &weight, std::vector<RowEntity> &entity_arrays);
+    boostEntitesByWeight(const std::vector<float> &weight,
+                         const std::vector<RowEntity> &entity_arrays,
+                         std::vector<Entity> &new_entities);
 };
 
 using MultiVectorCollectionIPPtr = std::shared_ptr<MultiVectorCollectionIP>;
