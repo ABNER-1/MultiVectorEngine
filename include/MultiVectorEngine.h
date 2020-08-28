@@ -19,8 +19,9 @@ class MultiVectorEngine : BaseEngine {
 
     Status
     DropCollection(std::string collection_name) override {
-        // todo: 1 find collection_name in collections
-        // todo: 2 for id in collections[collection_name].second: do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
+        // todo: 1 find collection_name in collections_
+        // todo: 2 for id in collections_[collection_name].second:
+        //  do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
     }
 
     Status
@@ -49,12 +50,12 @@ class MultiVectorEngine : BaseEngine {
     }
 
  private:
-    // use map first, edit it later
-    std::unordered_map<std::string, milvus::MetricType> metric_map;
-    // maintain collection list for all collections
-    // collections.first is the user provided collection name
-    // collections.second is the child collection(s) list
-    std::unordered_map<std::string, std::vector<int64_t>> collections;
+    // todo: use map first, edit it later -- serialization to file or db later
+    std::unordered_map<std::string, milvus::MetricType> metric_map_;
+    // maintain collection list for all collections_
+    // collections_.first is the user provided collection name
+    // collections_.second is the child collection(s) list
+    std::unordered_map<std::string, std::vector<int64_t>> collections_;
 };
 
 } // namespace multivector
