@@ -9,12 +9,12 @@ namespace multivector {
 class MultiVectorCollectionIP : MultiVectorCollection {
  public:
     MultiVectorCollectionIP(const std::shared_ptr<milvus::Connection> server_conn,
-                            const std::string collection_name)
+                            const std::string &collection_name)
         : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::IP) {}
 
     Status
-    CreateCollection(std::vector<int64_t> dimensions,
-                     std::vector<int64_t> index_file_sizes) override;
+    CreateCollection(const std::vector<int64_t> &dimensions,
+                     const std::vector<int64_t> &index_file_sizes) override;
 
     Status
     DropCollection() override;
@@ -24,20 +24,28 @@ class MultiVectorCollectionIP : MultiVectorCollection {
            std::vector<int64_t> &id_arrays) override;
 
     Status
-    Delete(std::vector<int64_t> &id_arrays) override;
+    Delete(const std::vector<int64_t> &id_arrays) override;
 
     Status
-    CreateIndex(milvus::IndexType index_type, std::string extra_params) override;
+    CreateIndex(milvus::IndexType index_type, const std::string &extra_params) override;
 
     Status
     DropIndex() override;
 
     Status
-    Search(std::vector<float> weight,
+    Search(const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
+ private:
+    inline Status
+    mergeRowEntityFromEntites(const std::vector<RowEntity> &entity_arrays,
+                              std::vector<milvus::Entity> &new_entities);
 
+    inline Status
+    normalizationEntites(std::vector<milvus::Entity> &entities);
 
+    inline Status
+    BoostEntitesByWeight(const std::vector<float> &weight, std::vector<RowEntity> &entity_arrays);
 };
 
 using MultiVectorCollectionIPPtr = std::shared_ptr<MultiVectorCollectionIP>;

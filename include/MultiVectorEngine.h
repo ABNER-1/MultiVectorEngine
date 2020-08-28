@@ -14,15 +14,15 @@ class MultiVectorEngine : BaseEngine {
     MultiVectorEngine(const std::string &ip, const std::string &port) {}
 
     Status
-    CreateCollection(std::string collection_name, milvus::MetricType metric_type,
-                     std::vector<int64_t> dimensions,
-                     std::vector<int64_t> index_file_sizes) override;
+    CreateCollection(const std::string &collection_name, milvus::MetricType metric_type,
+                     const std::vector<int64_t> &dimensions,
+                     const std::vector<int64_t> &index_file_sizes) override;
 
     // todo: 1 find collection_name in collections_
     // todo: 2 for id in collections_[collection_name].second:
     //  do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
     Status
-    DropCollection(std::string collection_name) override;
+    DropCollection(const std::string &collection_name) override;
 
     Status
     Insert(const std::string &collection_name,
@@ -30,16 +30,16 @@ class MultiVectorEngine : BaseEngine {
            std::vector<int64_t> &id_arrays) override;
 
     Status
-    Delete(const std::string &collection_name, std::vector<int64_t> &id_arrays) override;
+    Delete(const std::string &collection_name, const std::vector<int64_t> &id_arrays) override;
 
     Status
-    CreateIndex(const std::string &collection_name, milvus::IndexType index_type, std::string param) override;
+    CreateIndex(const std::string &collection_name, milvus::IndexType index_type, const std::string &param) override;
 
     Status
     DropIndex(const std::string &collection_name) override;
 
     Status
-    Search(const std::string &collection_name, std::vector<float> weight,
+    Search(const std::string &collection_name, const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
 

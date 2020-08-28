@@ -10,12 +10,12 @@ class MultiVectorCollection {
  public:
     MultiVectorCollection() = delete;
     MultiVectorCollection(const std::shared_ptr<milvus::Connection> server_conn,
-                          const std::string collection_name, const milvus::MetricType metric_type)
+                          const std::string &collection_name, const milvus::MetricType metric_type)
         : collection_name_(collection_name), metric_type_(metric_type), conn_ptr_(server_conn) {}
 
     virtual Status
-    CreateCollection(std::vector<int64_t> dimensions,
-                     std::vector<int64_t> index_file_sizes) = 0;
+    CreateCollection(const std::vector<int64_t> &dimensions,
+                     const std::vector<int64_t> &index_file_sizes) = 0;
 
     virtual Status
     DropCollection() = 0;
@@ -25,16 +25,16 @@ class MultiVectorCollection {
            std::vector<int64_t> &id_arrays) = 0;
 
     virtual Status
-    Delete(std::vector<int64_t> &id_arrays) = 0;
+    Delete(const std::vector<int64_t> &id_arrays) = 0;
 
     virtual Status
-    CreateIndex(milvus::IndexType index_type, std::string extra_params) = 0;
+    CreateIndex(milvus::IndexType index_type, const std::string &extra_params) = 0;
 
     virtual Status
     DropIndex() = 0;
 
     virtual Status
-    Search(std::vector<float> weight,
+    Search(const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, milvus::TopKQueryResult &topk_query_results) = 0;
 
