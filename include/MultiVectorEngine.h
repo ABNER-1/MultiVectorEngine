@@ -1,7 +1,11 @@
-#include "base _engine.h"
+#include <unordered_map>
+#include "MilvusApi.h"
+#include "Status.h"
+#include "BaseEngine.h"
 
+namespace milvus {
+namespace multivector {
 
-namespace mv {
 class MultiVectorEngine : BaseEngine {
  public:
     MultiVectorEngine(const std::string &ip, const std::string &port) {}
@@ -43,6 +47,5 @@ class MultiVectorEngine : BaseEngine {
     std::unordered_map<std::string, milvus::MetricType> metric_map;
 };
 
-
-}
-
+} // namespace multivector
+} // namespace milvus

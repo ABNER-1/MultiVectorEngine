@@ -1,7 +1,8 @@
 #include "MilvusApi.h"
 
 
-namespace mv {
+namespace milvus {
+namespace multivector {
 
 using Status = milvus::Status;
 using RowEntity = std::vector<milvus::Entity>; // multi vector
@@ -50,4 +51,5 @@ class BaseEngine {
     std::shared_ptr<milvus::Connection> conn_ptr_ = nullptr;
 };
 
-}
+} // namespace multivector
+} //namespace milvus

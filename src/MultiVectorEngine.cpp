@@ -1,7 +1,9 @@
-#include "multi_vector_engine.h"
+#include "MultiVectorEngine.h"
 
 
-namespace mv {
+
+namespace milvus {
+namespace multivector {
 
 
 Status
@@ -62,4 +64,5 @@ MultiVectorEngine::Search(const std::string &collection_name, std::vector<float>
 }
 
 
-} // namespace mv
+} // namespace multivector
+} // namespace milvus

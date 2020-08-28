@@ -9,11 +9,19 @@ set(SDK_INCLUDE ${SDK_HOME}/include)
 message("sdk home: ${SDK_HOME}")
 
 include_directories(${SDK_INCLUDE})
+include_directories(include)
+add_subdirectory(src)
 link_directories(${SDK_HOME})
 
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-add_executable(MultiVector src/main.cpp "include/base _engine.h" include/multi_vector_engine.h src/multi_vector_engine.cpp)
+
+set(multi_vector_srcs
+        src/MultiVectorEngine.cpp)
+
+
+add_executable(MultiVector main.cpp
+        ${multi_vector_srcs})
 
 target_link_libraries(MultiVector
         milvus_sdk
