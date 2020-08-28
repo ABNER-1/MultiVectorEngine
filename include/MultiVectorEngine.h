@@ -1,3 +1,4 @@
+#pragma once
 #include <unordered_map>
 #include "MilvusApi.h"
 #include "Status.h"
@@ -10,8 +11,8 @@ namespace multivector {
 
 class MultiVectorEngine : BaseEngine {
  public:
-    MultiVectorEngine() {}
-    MultiVectorEngine(const std::string &ip, const std::string &port) {}
+    MultiVectorEngine() = default;
+    MultiVectorEngine(const std::string &ip, const std::string &port);
 
     Status
     CreateCollection(const std::string &collection_name, milvus::MetricType metric_type,
@@ -41,7 +42,8 @@ class MultiVectorEngine : BaseEngine {
     Status
     Search(const std::string &collection_name, const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
+           int64_t topk, const std::string &extra_params,
+           milvus::TopKQueryResult &topk_query_results) override;
 
  private:
     // maintain collection list for all collections

@@ -1,3 +1,4 @@
+#pragma once
 #include "MilvusApi.h"
 #include "Status.h"
 #include "BaseEngine.h"
@@ -36,7 +37,8 @@ class MultiVectorCollection {
     virtual Status
     Search(const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results) = 0;
+           int64_t topk, const std::string &extra_params,
+           milvus::TopKQueryResult &topk_query_results) = 0;
 
  protected:
     std::string

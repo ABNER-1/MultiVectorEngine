@@ -1,4 +1,5 @@
 #include "MultiVectorCollectionIP.h"
+#include "cmath"
 
 
 namespace milvus {
@@ -70,7 +71,8 @@ MultiVectorCollectionIP::DropIndex() {
 Status
 MultiVectorCollectionIP::Search(const std::vector<float> &weight,
                                 const std::vector<RowEntity> &entity_array,
-                                int64_t topk, milvus::TopKQueryResult &topk_query_results) {
+                                int64_t topk, const std::string &extra_params,
+                                milvus::TopKQueryResult &topk_query_results) {
     std::vector<milvus::Entity> new_arrays(entity_array.size());
     auto status = this->mergeAndNormalize(entity_array, new_arrays);
     if (status.ok()) {
@@ -80,7 +82,7 @@ MultiVectorCollectionIP::Search(const std::vector<float> &weight,
     if (status.ok()) {
         std::cout << "[ERROR] boost entities by weight error: " << status.message() << std::endl;
     }
-    this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, "", topk_query_results);
+    this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, extra_params, topk_query_results);
 
     return Status::OK();
 }
@@ -110,6 +112,16 @@ MultiVectorCollectionIP::mergeRowEntityFromEntites(const std::vector<RowEntity> 
 
 Status
 MultiVectorCollectionIP::normalizationEntites(std::vector<milvus::Entity> &entities) {
+    for (auto &entity : entities) {
+        double mod_entities = 0.0;
+        for (auto &entity_elem :entity.float_data) {
+            mod_entities += entity_elem * entity_elem;
+        }
+        mod_entities = sqrt(mod_entities);
+        for (auto &entity_elem :entity.float_data) {
+            entity_elem /= mod_entities;
+        }
+    }
     return Status::OK();
 }
 
@@ -117,6 +129,20 @@ Status
 MultiVectorCollectionIP::boostEntitesByWeight(const std::vector<float> &weight,
                                               const std::vector<RowEntity> &entity_arrays,
                                               std::vector<Entity> &new_entities) {
+    for (auto i = 0; i < entity_arrays.size(); ++i) {
+        auto &tmp_row_entity = entity_arrays[i];
+        auto &target_row_entity = new_entities[i].float_data;
+        int idx = 0;
+        for (auto j = 0; j < tmp_row_entity.size(); ++j) {
+            auto &tmp_entity = tmp_row_entity[j];
+            auto len = tmp_entity.float_data.size();
+            auto tmp_weight = weight[j];
+            for (int k = 0; k < len; ++k) {
+                target_row_entity[idx + k] *= tmp_weight;
+            }
+            idx += len;
+        }
+    }
     return Status::OK();
 }
 

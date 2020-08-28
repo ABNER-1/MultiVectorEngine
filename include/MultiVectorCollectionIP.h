@@ -1,3 +1,4 @@
+#pragma once
 #include "MilvusApi.h"
 #include "Status.h"
 #include "MultiVectorCollection.h"
@@ -35,7 +36,8 @@ class MultiVectorCollectionIP : MultiVectorCollection {
     Status
     Search(const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
+           int64_t topk, const std::string &extra_params,
+           milvus::TopKQueryResult &topk_query_results) override;
  private:
     inline Status
     mergeAndNormalize(const std::vector<RowEntity> &entity_arrays,

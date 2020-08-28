@@ -1,3 +1,4 @@
+#pragma once
 #include "MilvusApi.h"
 
 
@@ -39,7 +40,8 @@ class BaseEngine {
     virtual Status
     Search(const std::string &collection_name, const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results) = 0;
+           int64_t topk, const std::string &extra_params,
+           milvus::TopKQueryResult &topk_query_results) = 0;
 
  protected:
     std::shared_ptr<milvus::Connection> conn_ptr_ = nullptr;
