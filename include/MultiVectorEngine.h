@@ -2,6 +2,7 @@
 #include "MilvusApi.h"
 #include "Status.h"
 #include "BaseEngine.h"
+#include "MultiVectorCollection.h"
 
 
 namespace milvus {
@@ -43,18 +44,10 @@ class MultiVectorEngine : BaseEngine {
            int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
 
  private:
-    static std::string
-    GenerateChildCollectionName(const std::string &collection_prefix, int64_t idx) {
-        return collection_prefix + "_" + std::to_string(idx);
-    }
-
- private:
-    // use map first, edit it later
-    std::unordered_map<std::string, milvus::MetricType> metric_map;
     // maintain collection list for all collections
     // collections.first is the user provided collection name
     // collections.second is the child collection(s) list
-    std::unordered_map<std::string, std::vector<int64_t>> collections;
+    std::unordered_map<std::string, MultiVectorCollectionPtr> collections_;
 };
 
 } // namespace multivector
