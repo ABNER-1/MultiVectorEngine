@@ -5,12 +5,6 @@
 
 namespace mv {
 
-struct MultiEntitiesCollection {
-    std::string collection_name;
-    milvus::MetricType metric_type;
-    std::vector<int64_t> dimensions;
-    std::vector<int64_t> index_file_sizes;
-};
 
 class MultiVectorEngine {
  public:
@@ -24,15 +18,12 @@ class MultiVectorEngine {
         milvus::Connection::Destroy(this->conn_ptr_);
     }
 
-    milvus::Status
-    CreateCollection(MultiEntitiesCollection collection_info);
 
     milvus::Status
     DropCollection(std::string collection_name);
 
     milvus::Status
     Insert(const std::string& collection_name,
-           const std::string& partition_tag,
            const std::vector<std::vector<milvus::Entity>>& entity_arrays,
            std::vector<int64_t>& id_arrays);
 
@@ -97,7 +88,6 @@ MultiVectorEngine::CreateCollection(MultiEntitiesCollection collection_info) {
 
 milvus::Status
 MultiVectorEngine::Insert(const std::string& collection_name,
-                          const std::string& partition_tag,
                           const std::vector<std::vector<milvus::Entity> >& entity_arrays,
                           std::vector<int64_t>& id_array) {
     for (auto i = 0; i < entity_arrays.size(); ++i) {
