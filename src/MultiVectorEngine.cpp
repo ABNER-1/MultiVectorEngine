@@ -1,69 +1,96 @@
-#include "MultiVectorEngine.h"
-#include "MultiVectorCollection.h"
+#include <memory>
+#include <MilvusApi.h>
+#include <MultiVectorEngine.h>
+#include <MultiVectorCollection.h>
+#include <MultiVectorEngine.h>
+#include "MultiVectorCollectionIP.h"
 #include "MultiVectorCollectionL2.h"
 
 
 namespace milvus {
 namespace multivector {
 
-//
-//Status
-//MultiVectorEngine::CreateCollection(std::string collection_name, milvus::MetricType metric_type,
-//                                    std::vector<int64_t> dimensions,
-//                                    std::vector<int64_t> index_file_sizes) {
-//    this->metric_map_[collection_name] = metric_type;
-//    if (metric_type == milvus::MetricType::L2) {
-//        for (auto i = 0; i < dimensions.size(); ++i) {
-//            std::string tmp_collection = GenerateChildCollectionName(collection_name, i);
-//            milvus::CollectionParam param
-//                {tmp_collection, dimensions[i], index_file_sizes[i],
-//                 metric_type};
-//            auto status = this->conn_ptr_->CreateCollection(param);
-//            if (!status.ok()) {
-//                return status;
-//            }
-//        }
-//    } else if (metric_type == milvus::MetricType::IP) {
-//        int64_t new_dims = 0;
-//        for (auto dims : dimensions) {
-//            new_dims += dims;
-//        }
-//        milvus::CollectionParam param
-//            {collection_name, new_dims, index_file_sizes[0],
-//             metric_type};
-//        auto status = this->conn_ptr_->CreateCollection(param);
-//        if (!status.ok()) {
-//            return status;
-//        }
-//    } else {
-//        std::cout << "unsupported metric" << std::endl;
-//    }
-//
-//    return milvus::Status::OK();
-//}
-//
-//Status
-//MultiVectorEngine::Insert(const std::string &collection_name,
-//                          const std::vector<std::vector<milvus::Entity> > &entity_arrays,
-//                          std::vector<int64_t> &id_array) {
-//    for (auto i = 0; i < entity_arrays.size(); ++i) {
-//        auto &entity_array = entity_arrays[i];
-//        std::string tmp_collection_name = GenerateChildCollectionName(collection_name, i);
-//        auto status = this->conn_ptr_->Insert(tmp_collection_name, "", entity_array, id_array);
-//        if (!status.ok()) {
-//            return status;
-//        }
-//    }
-//    return milvus::Status::OK();
-//}
-//
-//Status
-//MultiVectorEngine::Search(const std::string &collection_name, std::vector<float> weight,
-//                          const std::vector<std::vector<milvus::Entity>> &entity_array,
-//                          int64_t topk, milvus::TopKQueryResult &topk_query_results) {
-//    return milvus::Status();
-//}
+MultiVectorEngine::MultiVectorEngine(const std::string &ip, const std::string &port) {
+    this->conn_ptr_ = milvus::Connection::Create();
+    ConnectParam param{ip, port};
+    this->conn_ptr_->Connect(param);
+}
 
+Status
+MultiVectorEngine::CreateCollection(const std::string &collection_name,
+                                    milvus::MetricType metric_type,
+                                    const std::vector<int64_t> &dimensions,
+                                    const std::vector<int64_t> &index_file_sizes) {
+    auto status = createCollectionPtr(collection_name, metric_type);
+    if (status.ok()) {
+        std::cout << "[ERROR] create collection ptr error" << std::endl;
+    }
+    return getOrFetchCollectionPtr(collection_name)->CreateCollection(dimensions, index_file_sizes);
+}
+
+Status
+MultiVectorEngine::DropCollection(const std::string &collection_name) {
+    return getOrFetchCollectionPtr(collection_name)->DropCollection();
+}
+
+Status
+MultiVectorEngine::Insert(const std::string &collection_name,
+                          const std::vector<milvus::multivector::RowEntity> &entity_arrays,
+                          std::vector<int64_t> &id_arrays) {
+    return getOrFetchCollectionPtr(collection_name)->Insert(entity_arrays, id_arrays);
+}
+
+Status
+MultiVectorEngine::CreateIndex(const std::string &collection_name,
+                               milvus::IndexType index_type,
+                               const std::string &param) {
+    return getOrFetchCollectionPtr(collection_name)->CreateIndex(index_type, param);
+}
+
+Status
+MultiVectorEngine::DropIndex(const std::string &collection_name) {
+    return getOrFetchCollectionPtr(collection_name)->DropIndex();
+}
+
+Status
+MultiVectorEngine::Search(const std::string &collection_name,
+                          const std::vector<float> &weight,
+                          const std::vector<RowEntity> &entity_array,
+                          int64_t topk, const std::string &extra_params,
+                          milvus::TopKQueryResult &topk_query_results) {
+    return getOrFetchCollectionPtr(collection_name)->Search(weight,
+                                                            entity_array,
+                                                            topk,
+                                                            extra_params,
+                                                            topk_query_results);
+}
+
+
+Status
+MultiVectorEngine::createCollectionPtr(const std::string &collection_name,
+                                       milvus::MetricType metric_type) {
+    MultiVectorCollectionPtr collection_ptr = nullptr;
+    if (metric_type == milvus::MetricType::IP) {
+        collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
+            std::make_shared<MultiVectorCollectionIP>(this->conn_ptr_, collection_name));
+    } else if (metric_type == milvus::MetricType::L2) {
+        collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
+            std::make_shared<MultiVectorCollectionL2>(this->conn_ptr_, collection_name));
+//        collection_ptr = std::make_shared<MultiVectorCollectionL2>(this->conn_ptr_, collection_name);
+    }
+    this->collections_[collection_name] = collection_ptr;
+    return Status::OK();
+}
+
+MultiVectorCollectionPtr
+MultiVectorEngine::getOrFetchCollectionPtr(const std::string &collection_name) {
+    auto iter = this->collections_.find(collection_name);
+    if (iter != this->collections_.end()) {
+        return this->collections_[collection_name];
+    }
+    // fetch information and create from milvus or from storage.
+    return nullptr;
+}
 
 } // namespace multivector
 } // namespace milvus

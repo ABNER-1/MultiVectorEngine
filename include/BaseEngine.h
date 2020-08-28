@@ -1,3 +1,4 @@
+#pragma once
 #include "MilvusApi.h"
 
 
@@ -14,13 +15,13 @@ class BaseEngine {
     BaseEngine(std::shared_ptr<milvus::Connection> conn_ptr) : conn_ptr_(conn_ptr) {}
 
     virtual Status
-    CreateCollection(std::string collection_name,
+    CreateCollection(const std::string &collection_name,
                      milvus::MetricType metric_type,
-                     std::vector<int64_t> dimensions,
-                     std::vector<int64_t> index_file_sizes) = 0;
+                     const std::vector<int64_t> &dimensions,
+                     const std::vector<int64_t> &index_file_sizes) = 0;
 
     virtual Status
-    DropCollection(std::string collection_name) = 0;
+    DropCollection(const std::string &collection_name) = 0;
 
     virtual Status
     Insert(const std::string &collection_name,
@@ -28,24 +29,19 @@ class BaseEngine {
            std::vector<int64_t> &id_arrays) = 0;
 
     virtual Status
-    Delete(const std::string &collection_name, std::vector<int64_t> &id_arrays) = 0;
+    Delete(const std::string &collection_name, const std::vector<int64_t> &id_arrays) = 0;
 
     virtual Status
-    CreateIndex(const std::string &collection_name, milvus::IndexType index_type, std::string param) = 0;
+    CreateIndex(const std::string &collection_name, milvus::IndexType index_type, const std::string &param) = 0;
 
     virtual Status
     DropIndex(const std::string &collection_name) = 0;
 
     virtual Status
-    Search(const std::string &collection_name, std::vector<float> weight,
+    Search(const std::string &collection_name, const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results) = 0;
-
- private:
-    static std::string
-    GenerateChildCollectionName(const std::string &collection_prefix, int64_t idx) {
-        return collection_prefix + "_" + std::to_string(idx);
-    }
+           int64_t topk, const std::string &extra_params,
+           milvus::TopKQueryResult &topk_query_results) = 0;
 
  protected:
     std::shared_ptr<milvus::Connection> conn_ptr_ = nullptr;
