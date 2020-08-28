@@ -9,6 +9,7 @@ namespace multivector {
 
 class MultiVectorEngine : BaseEngine {
  public:
+    MultiVectorEngine() {}
     MultiVectorEngine(const std::string &ip, const std::string &port) {}
 
     Status
@@ -17,26 +18,29 @@ class MultiVectorEngine : BaseEngine {
                      std::vector<int64_t> index_file_sizes) override;
 
     Status
-    DropCollection(std::string collection_name);
+    DropCollection(std::string collection_name) override {
+        // todo: 1 find collection_name in collections
+        // todo: 2 for id in collections[collection_name].second: do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
+    }
 
     Status
     Insert(const std::string &collection_name,
            const std::vector<RowEntity> &entity_arrays,
-           std::vector<int64_t> &id_arrays);
+           std::vector<int64_t> &id_arrays) override;
 
     Status
-    Delete(const std::string &collection_name, std::vector<int64_t> &id_arrays);
+    Delete(const std::string &collection_name, std::vector<int64_t> &id_arrays) override;
 
     Status
-    CreateIndex(const std::string &collection_name, milvus::MetricType index_type, std::string param);
+    CreateIndex(const std::string &collection_name, milvus::MetricType index_type, std::string param) override;
 
     Status
-    DropIndex(const std::string &collection_name);
+    DropIndex(const std::string &collection_name) override;
 
     Status
     Search(const std::string &collection_name, std::vector<float> weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
-           int64_t topk, milvus::TopKQueryResult &topk_query_results);
+           int64_t topk, milvus::TopKQueryResult &topk_query_results) override;
 
  private:
     static std::string
@@ -47,6 +51,10 @@ class MultiVectorEngine : BaseEngine {
  private:
     // use map first, edit it later
     std::unordered_map<std::string, milvus::MetricType> metric_map;
+    // maintain collection list for all collections
+    // collections.first is the user provided collection name
+    // collections.second is the child collection(s) list
+    std::unordered_map<std::string, std::vector<int64_t>> collections;
 };
 
 } // namespace multivector

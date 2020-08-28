@@ -17,7 +17,10 @@ link_directories(${SDK_HOME})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(multi_vector_srcs
-        src/MultiVectorEngine.cpp)
+        src/MultiVectorEngine.cpp
+        src/MultiVectorEngineL2.cpp
+        src/MultiVectorEngineIP.cpp
+        )
 
 
 add_executable(MultiVector main.cpp
