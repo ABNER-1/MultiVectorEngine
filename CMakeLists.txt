@@ -18,8 +18,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(multi_vector_srcs
         src/MultiVectorEngine.cpp
-        src/MultiVectorEngineL2.cpp
-        src/MultiVectorEngineIP.cpp
+        src/MultiVectorCollectionIP.cpp
+        src/MultiVectorCollectionL2.cpp
         )
 
 
