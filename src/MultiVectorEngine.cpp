@@ -41,6 +41,12 @@ MultiVectorEngine::Insert(const std::string &collection_name,
 }
 
 Status
+MultiVectorEngine::Delete(const std::string &collection_name,
+                          const std::vector<int64_t> &id_arrays) {
+    return getOrFetchCollectionPtr(collection_name)->Delete(id_arrays);
+}
+
+Status
 MultiVectorEngine::CreateIndex(const std::string &collection_name,
                                milvus::IndexType index_type,
                                const std::string &param) {
@@ -88,7 +94,7 @@ MultiVectorEngine::getOrFetchCollectionPtr(const std::string &collection_name) {
     if (iter != this->collections_.end()) {
         return this->collections_[collection_name];
     }
-    // fetch information and create from milvus or from storage.
+    // todo: fetch information and create from milvus or from storage.
     return nullptr;
 }
 

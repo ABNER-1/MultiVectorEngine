@@ -7,7 +7,7 @@
 namespace milvus {
 namespace multivector {
 
-class MultiVectorCollectionL2 : MultiVectorCollection {
+class MultiVectorCollectionL2 : public MultiVectorCollection {
  public:
     MultiVectorCollectionL2(const std::shared_ptr<milvus::Connection> server_conn,
                             const std::string &collection_name)

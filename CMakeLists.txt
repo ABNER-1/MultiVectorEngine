@@ -19,9 +19,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(multi_vector_srcs
         src/MultiVectorEngine.cpp
         src/MultiVectorCollectionIP.cpp
-        src/MultiVectorCollectionL2.cpp
-        )
+        src/MultiVectorCollectionL2.cpp test/main.cpp test/testIP.cpp)
 
+add_library(multi_vector STATIC IMPORTED)
 
 add_executable(MultiVector main.cpp
         ${multi_vector_srcs})
@@ -29,3 +29,5 @@ add_executable(MultiVector main.cpp
 target_link_libraries(MultiVector
         milvus_sdk
         pthread)
+
+add_subdirectory(test)

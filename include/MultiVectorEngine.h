@@ -10,10 +10,14 @@
 namespace milvus {
 namespace multivector {
 
-class MultiVectorEngine : BaseEngine {
+class MultiVectorEngine : public BaseEngine {
  public:
     MultiVectorEngine() = default;
     MultiVectorEngine(const std::string &ip, const std::string &port);
+
+    ~MultiVectorEngine(){
+        milvus::Connection::Destroy(this->conn_ptr_);
+    }
 
     Status
     CreateCollection(const std::string &collection_name, milvus::MetricType metric_type,
@@ -42,7 +46,7 @@ class MultiVectorEngine : BaseEngine {
 
     Status
     Search(const std::string &collection_name, const std::vector<float> &weight,
-           const std::vector<std::vector<milvus::Entity>> &entity_array,
+           const std::vector<RowEntity> &entity_array,
            int64_t topk, const std::string &extra_params,
            milvus::TopKQueryResult &topk_query_results) override;
 
