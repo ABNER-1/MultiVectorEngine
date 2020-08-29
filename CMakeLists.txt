@@ -10,23 +10,15 @@ message("sdk home: ${SDK_HOME}")
 
 include_directories(${SDK_INCLUDE})
 include_directories(include)
-add_subdirectory(src)
 link_directories(${SDK_HOME})
 
-
+add_subdirectory(src)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-set(multi_vector_srcs
-        src/MultiVectorEngine.cpp
-        src/MultiVectorCollectionIP.cpp
-        src/MultiVectorCollectionL2.cpp test/main.cpp test/testIP.cpp)
-
-add_library(multi_vector STATIC IMPORTED)
-
-add_executable(MultiVector main.cpp
-        ${multi_vector_srcs})
+add_executable(MultiVector main.cpp)
 
 target_link_libraries(MultiVector
+        multi_vector
         milvus_sdk
         pthread)
 
