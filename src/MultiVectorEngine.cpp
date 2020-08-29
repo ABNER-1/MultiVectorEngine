@@ -22,8 +22,8 @@ MultiVectorEngine::CreateCollection(const std::string &collection_name,
                                     const std::vector<int64_t> &dimensions,
                                     const std::vector<int64_t> &index_file_sizes) {
     auto status = createCollectionPtr(collection_name, metric_type);
-    if (status.ok()) {
-        std::cout << "[ERROR] create collection ptr error" << std::endl;
+    if (!status.ok()) {
+        std::cout << "[ERROR] create collection ptr error: " << status.message() << std::endl;
     }
     return getOrFetchCollectionPtr(collection_name)->CreateCollection(dimensions, index_file_sizes);
 }

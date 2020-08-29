@@ -45,7 +45,7 @@ MultiVectorCollectionIP::Insert(const std::vector<milvus::multivector::RowEntity
     }
     std::vector<milvus::Entity> new_arrays(nq);
     auto status = this->mergeAndNormalize(entity_arrays, new_arrays);
-    if (status.ok()) {
+    if (!status.ok()) {
         std::cout << "[ERROR] merge and normalize error: " << status.message() << std::endl;
     }
     return this->conn_ptr_->Insert(this->collection_name_, "", new_arrays, id_arrays);
@@ -75,11 +75,11 @@ MultiVectorCollectionIP::Search(const std::vector<float> &weight,
                                 milvus::TopKQueryResult &topk_query_results) {
     std::vector<milvus::Entity> new_arrays(entity_array.size());
     auto status = this->mergeAndNormalize(entity_array, new_arrays);
-    if (status.ok()) {
+    if (!status.ok()) {
         std::cout << "[ERROR] merge and normalize error: " << status.message() << std::endl;
     }
     status = this->boostEntitesByWeight(weight, entity_array, new_arrays);
-    if (status.ok()) {
+    if (!status.ok()) {
         std::cout << "[ERROR] boost entities by weight error: " << status.message() << std::endl;
     }
     this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, extra_params, topk_query_results);
