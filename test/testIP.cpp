@@ -34,6 +34,16 @@ generateIds(int nq, std::vector<int64_t> &id_arrays) {
     }
 }
 
+void
+showResult(const milvus::TopKQueryResult &topk_query_result) {
+    for (auto &result : topk_query_result) {
+        std::cout << "query :" << std::endl;
+        for (int i = 0; i < result.ids.size(); ++i) {
+            std::cout << "   " << result.ids[i] << " " << result.distances[i] << std::endl;
+        }
+    }
+}
+
 int main() {
     using namespace milvus::multivector;
     std::string ip = "127.0.0.1";
@@ -43,30 +53,36 @@ int main() {
     std::vector<int64_t> dim{512, 128};
     std::vector<int64_t> index_file_sizes{1024, 1024};
 
+
+    auto assert_status = [](milvus::Status status) {
+        if (!status.ok()) {
+            std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
+        }
+    };
     int n = 100;
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
-    engine->CreateCollection(collection_name, milvus::MetricType::IP, dim, index_file_sizes);
+    assert_status(engine->CreateCollection(collection_name, milvus::MetricType::IP, dim, index_file_sizes));
 
     std::vector<RowEntity> row_entities;
     std::vector<int64_t> id_arrays;
     generateArrays(n, dim, row_entities);
     generateIds(n, id_arrays);
 
-    engine->Insert(collection_name, row_entities, id_arrays);
-    engine->CreateIndex(collection_name, milvus::IndexType::IVFPQ, "");
+    assert_status(engine->Insert(collection_name, row_entities, id_arrays));
+    assert_status(engine->CreateIndex(collection_name, milvus::IndexType::IVFPQ, ""));
 
     int nq = 10;
     int topk = 20;
     std::vector<RowEntity> query_entities;
     milvus::TopKQueryResult topk_result;
     generateArrays(nq, dim, query_entities);
-    engine->Search(collection_name, {1.0, 2.1},
-                   query_entities, topk, "", topk_result);
+    assert_status(engine->Search(collection_name, {1.0, 2.1},
+                                 query_entities, topk, "", topk_result));
+    showResult(topk_result);
 
-
-    engine->DropIndex(collection_name);
-    engine->Delete(collection_name, id_arrays);
-    engine->DropCollection("test_collection");
+    assert_status(engine->DropIndex(collection_name));
+    assert_status(engine->Delete(collection_name, id_arrays));
+    assert_status(engine->DropCollection("test_collection"));
 
 
 }
