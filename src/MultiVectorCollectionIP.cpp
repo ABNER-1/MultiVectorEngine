@@ -98,12 +98,8 @@ MultiVectorCollectionIP::mergeRowEntityFromEntites(const std::vector<RowEntity> 
         for (auto &entities : tmp_row_entity) {
             auto &target_float_vector = target_row_entity.float_data;
             auto &tmp_float_vector = entities.float_data;
-            target_float_vector.insert(target_float_vector.end(), tmp_float_vector.begin(), tmp_float_vector.end());
-
-//            ignore binary data
-//            auto &target_binary_vector = target_row_entity.binary_data;
-//            auto &tmp_binary_vector = entities.binary_data;
-//            target_binary_vector.insert(target_binary_vector.end(), tmp_binary_vector.begin(), tmp_binary_vector.end());
+            target_float_vector.insert(target_float_vector.end(),
+                                       tmp_float_vector.begin(), tmp_float_vector.end());
         }
     }
     return Status::OK();
