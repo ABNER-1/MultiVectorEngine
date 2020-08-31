@@ -7,7 +7,7 @@
 namespace milvus {
 namespace multivector {
 
-class MultiVectorCollectionIP : MultiVectorCollection {
+class MultiVectorCollectionIP : public MultiVectorCollection {
  public:
     MultiVectorCollectionIP(const std::shared_ptr<milvus::Connection> server_conn,
                             const std::string &collection_name)

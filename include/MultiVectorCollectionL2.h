@@ -7,7 +7,7 @@
 namespace milvus {
 namespace multivector {
 
-class MultiVectorCollectionL2 : MultiVectorCollection {
+class MultiVectorCollectionL2 : public MultiVectorCollection {
  public:
     MultiVectorCollectionL2(const std::shared_ptr<milvus::Connection> server_conn,
                             const std::string &collection_name)
@@ -44,7 +44,7 @@ class MultiVectorCollectionL2 : MultiVectorCollection {
            const std::vector<milvus::Entity> &entity_query,
            int64_t topk, const std::string &extra_params,
            QueryResult &query_results,
-           size_t qid);
+           int64_t tpk);
 
  private:
  private:
