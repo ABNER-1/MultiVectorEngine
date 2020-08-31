@@ -167,7 +167,6 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                 pos = nodes.size();
                 new_boy.push_back(pos);
                 nodes.emplace_back(cur_id, (p_dists[i][li] * -weight[i]), 0, false, num_group);
-                nodes[pos].group_flags[i] = true;
                 hash_tbl[cur_id] = pos;
             }
             if (!nodes[pos].result_flag && nodes[pos].lb > nodes[result_set.top()].lb) {
@@ -183,9 +182,11 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                     nodes[j].ub -= ((p_dists[i][li - 1] - p_dists[i][li]) * -weight[i]);
                 }
             }
+            nodes[pos].group_flags[i] = true;
         }
         for (auto i = 0; i < new_boy.size(); ++ i)
             nodes[new_boy[i]].ub = cur_max_estimate_value;
+        new_boy.clear();
         max_unselected_ub = std::numeric_limits<float>::min();
         bool find_flag = false;
         for (auto i = 0; i < nodes.size(); ++ i) {
@@ -193,6 +194,11 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                 max_unselected_ub = std::max(max_unselected_ub, nodes[i].ub);
                 find_flag = true;
             }
+        }
+        for (auto i = 0; i < result_set.size(); ++ i) {
+            auto tp = result_set.top();
+            result_set.pop();
+            result_set.emplace(tp);
         }
         if (!find_flag)
             max_unselected_ub = std::numeric_limits<float>::max();
@@ -207,6 +213,7 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
     result.distances.resize(tot_size);
     while (!result_set.empty()) {
         tot_size --;
+//        std::cout << "topid = " << nodes[result_set.top()].id << ", topdis = " << nodes[result_set.top()].lb << std::endl;
         result.ids[tot_size] = nodes[result_set.top()].id;
         result.distances[tot_size] = -nodes[result_set.top()].lb;
         result_set.pop();
