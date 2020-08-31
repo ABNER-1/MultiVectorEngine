@@ -39,6 +39,14 @@ class MultiVectorCollectionL2 : MultiVectorCollection {
            int64_t topk, const std::string &extra_params,
            milvus::TopKQueryResult &topk_query_results) override;
 
+    Status
+    SearchImpl(const std::vector<float> &weight,
+           const std::vector<milvus::Entity> &entity_query,
+           int64_t topk, const std::string &extra_params,
+           QueryResult &query_results,
+           size_t qid);
+
+ private:
  private:
 
 };
