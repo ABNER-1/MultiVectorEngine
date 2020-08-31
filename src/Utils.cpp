@@ -6,15 +6,15 @@ namespace milvus {
 namespace multivector {
 
 
-void RearrangeQueryEntityArray(const std::vector<std::vector<milvus::Entity>> &entity_array,
-                               std::vector<std::vector<milvus::Entity>> &rearranged_queries,
-                               size_t num_group,
-                               const std::vector<bool> &failed_nqs) {
+void RearrangeEntityArray(const std::vector<std::vector<milvus::Entity>> &entity_array,
+                          std::vector<std::vector<milvus::Entity>> &rearranged_queries,
+                          size_t num_group) {
     size_t nq = entity_array.size();
+    auto new_array = const_cast<std::vector<std::vector<milvus::Entity>>*>(&entity_array);
     for (auto i = 0; i < nq; ++ i) {
-        if (!failed_nqs[i]) continue;
         for (auto j = 0; j < num_group; ++ j) {
-            rearranged_queries[j].emplace_back(entity_array[i][j]);
+            rearranged_queries[j][i].float_data.swap((*new_array)[i][j].float_data);
+            rearranged_queries[j][i].binary_data.swap((*new_array)[i][j].binary_data);
         }
     }
 }

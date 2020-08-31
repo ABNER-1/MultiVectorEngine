@@ -13,10 +13,9 @@ struct NRANode {
     NRANode(int64_t id, float lb, float ub, bool result_flag, size_t group_size):id(id), lb(lb), ub(ub), result_flag(result_flag), group_flags(group_size) {}
 };
 
-void RearrangeQueryEntityArray(const std::vector<std::vector<milvus::Entity>> &entity_array,
-                               std::vector<std::vector<milvus::Entity>> &rearranged_queries,
-                               size_t num_group,
-                               const std::vector<bool> &failed_nqs);
+void RearrangeEntityArray(const std::vector<std::vector<milvus::Entity>> &entity_array,
+                          std::vector<std::vector<milvus::Entity>> &rearranged_queries,
+                          size_t num_group);
 
 bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                              milvus::QueryResult &result,

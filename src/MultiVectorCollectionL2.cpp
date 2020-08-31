@@ -36,8 +36,10 @@ MultiVectorCollectionL2::DropCollection() {
 Status
 MultiVectorCollectionL2::Insert(const std::vector<milvus::multivector::RowEntity> &entity_arrays,
                                 std::vector<int64_t> &id_arrays) {
-    for (auto i = 0; i < entity_arrays.size(); ++ i) {
-        auto status = conn_ptr_->Insert(child_collection_names_[i], "", entity_arrays[i], id_arrays);
+    std::vector<std::vector<milvus::Entity>> rearranged_arrays(child_collection_names_.size(), std::vector<milvus::Entity>(entity_arrays.size(), milvus::Entity()));
+    RearrangeEntityArray(entity_arrays, rearranged_arrays, child_collection_names_.size());
+    for (auto i = 0; i < rearranged_arrays.size(); ++ i) {
+        auto status = conn_ptr_->Insert(child_collection_names_[i], "", rearranged_arrays[i], id_arrays);
         if (!status.ok())
             return status;
     }
@@ -91,7 +93,7 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
     std::vector<TopKQueryResult> tqrs(child_collection_names_.size(), TopKQueryResult(1, QueryResult()));
     std::vector<std::string> partition_tags;
     for (auto i = 0; i < child_collection_names_.size(); ++ i) {
-        std::vector<milvus::Entity> container(1);
+        std::vector<milvus::Entity> container;
         container.emplace_back(entity_query[i]);
         auto status = conn_ptr_->Search(child_collection_names_[i], partition_tags, container, tpk, extra_params, tqrs[i]);
         if (!status.ok())
