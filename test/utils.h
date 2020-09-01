@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MultiVectorEngine.h"
 #include <random>
 #include <nlohmann/json.hpp>
@@ -29,3 +30,13 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               const nlohmann::json& query_json,
               milvus::MetricType metric_type = milvus::MetricType::IP);
 
+void
+load_data(const std::string& filename,
+          std::vector<std::vector<float>>& vector_data,
+          unsigned& num, unsigned& dim,
+          int page_num = 0, int page = 0);
+
+void
+split_data(const std::vector<std::vector<float>>& raw_data,
+           std::vector<std::vector<milvus::Entity>>& splited_data,
+           const std::vector<int64_t>& dims);
