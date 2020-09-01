@@ -1,7 +1,8 @@
 set(multi_vector_srcs
         MultiVectorEngine.cpp
         MultiVectorCollectionIP.cpp
-        MultiVectorCollectionL2.cpp)
+        MultiVectorCollectionL2.cpp
+        Utils.cpp)
 
 add_library(multi_vector SHARED ${multi_vector_srcs})
 set_target_properties(multi_vector PROPERTIES LINKER_LANGUAGE CXX)

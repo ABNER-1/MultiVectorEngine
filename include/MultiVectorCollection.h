@@ -51,6 +51,7 @@ class MultiVectorCollection {
     milvus::MetricType metric_type_;
     std::vector<std::string> child_collection_names_;
     std::shared_ptr<milvus::Connection> conn_ptr_ = nullptr;
+    std::vector<int64_t> dimensions_;
 };
 
 using MultiVectorCollectionPtr = std::shared_ptr<MultiVectorCollection>;
