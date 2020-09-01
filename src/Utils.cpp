@@ -135,12 +135,23 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
         cur_max_estimate_value += ((*p_dists[i]) * (-weight[i]));
-        nodes.emplace_back(*p_ids[i], ((*p_dists[i]) * (-weight[i])), 0, false, num_group);
-        nodes[i].group_flags[i] = true;
-        hash_tbl[*p_ids[i]] = i;
+        auto cur_id = *p_ids[i];
+        auto target = hash_tbl.find(cur_id);
+        size_t pos;
+        if (target != hash_tbl.end()) {
+            pos = target->second;
+            nodes[pos].lb += (*p_dists[i] * (-weight[i]));
+        } else {
+            pos = nodes.size();
+            hash_tbl[cur_id] = pos;
+            nodes.emplace_back(cur_id, (*p_dists[i] * (-weight[i])), 0, false, num_group);
+        }
+//        nodes.emplace_back(*p_ids[i], ((*p_dists[i]) * (-weight[i])), 0, false, num_group);
+        nodes[pos].group_flags[i] = true;
+//        hash_tbl[*p_ids[i]] = i;
 //        result_set.emplace(i);
     }
-    for (auto i = 0; i < num_group; ++ i) {
+    for (auto i = 0; i < nodes.size(); ++ i) {
         nodes[i].ub = cur_max_estimate_value;
         result_set.emplace(i);
         nodes[i].result_flag = true;

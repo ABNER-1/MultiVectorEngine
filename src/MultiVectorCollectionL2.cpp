@@ -11,6 +11,7 @@ MultiVectorCollectionL2::CreateCollection(const std::vector<int64_t> &dimensions
     milvus::CollectionParam cp;
     cp.metric_type = metric_type_;
     for (auto i = 0; i < dimensions.size(); ++ i) {
+        child_collection_names_.emplace_back(GenerateChildCollectionName(i));
         cp.collection_name = child_collection_names_[i];
         cp.dimension = dimensions[i];
         cp.index_file_size = index_file_sizes[i];
@@ -90,7 +91,9 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     QueryResult &query_results,
                                     int64_t tpk) {
 
-    std::vector<TopKQueryResult> tqrs(child_collection_names_.size(), TopKQueryResult(1, QueryResult()));
+//    std::vector<TopKQueryResult> tqrs(child_collection_names_.size(), TopKQueryResult(1, QueryResult()));
+    std::vector<TopKQueryResult> tqrs;
+    tqrs.resize(child_collection_names_.size());
     std::vector<std::string> partition_tags;
     for (auto i = 0; i < child_collection_names_.size(); ++ i) {
         std::vector<milvus::Entity> container;
@@ -109,10 +112,11 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 const std::vector<RowEntity> &entity_array,
                                 int64_t topk, const std::string &extra_params,
                                 milvus::TopKQueryResult &topk_query_results) {
-    int64_t threshold, tpk;
-    tpk = topk;
-    threshold = topk << 3;
+    topk_query_results.resize(entity_array.size());
     for (auto q = 0; q < entity_array.size(); ++ q) {
+        int64_t threshold, tpk;
+        tpk = topk;
+        threshold = topk << 3;
         bool succ_flag = false;
         do {
             tpk <<= 1;
