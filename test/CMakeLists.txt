@@ -13,3 +13,19 @@ target_link_libraries(test_nra
         multi_vector
         milvus_sdk
         pthread)
+
+
+add_executable(test_l2 test_l2.cpp)
+
+target_link_libraries(test_l2
+        multi_vector
+        milvus_sdk
+        pthread)
+
+add_executable(test_nra2 test_nra2.cpp)
+
+target_link_libraries(test_nra2
+        multi_vector
+        milvus_sdk
+        pthread)
+
