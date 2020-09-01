@@ -66,21 +66,21 @@ showResult(const milvus::TopKQueryResult& topk_query_result) {
 }
 
 void
-changeType(std::shared_ptr<MultiVectorEngine> engine, milvus::IndexType index_type,
-           const nlohmann::json& index_json, const nlohmann::json& query_json) {
+testIndexType(std::shared_ptr<MultiVectorEngine> engine, milvus::IndexType index_type,
+              const nlohmann::json& index_json, const nlohmann::json& query_json) {
     auto assert_status = [](milvus::Status status) {
         if (!status.ok()) {
             std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
         }
     };
 
-    auto collection_name = "test_collection19";
+    auto collection_name = "test_collection";
     std::vector<int64_t> dim{512, 128};
     std::vector<int64_t> index_file_sizes{1024, 1024};
     int vector_num = 100;
     int nq = 10;
     int topk = 20;
-    std::vector<float> weight = {0.9, 2.2};
+    std::vector<float> weight = {1, 1};
 
     assert_status(engine->CreateCollection(collection_name, milvus::MetricType::IP, dim, index_file_sizes));
 
@@ -96,7 +96,10 @@ changeType(std::shared_ptr<MultiVectorEngine> engine, milvus::IndexType index_ty
 
     // generate query vector
     std::vector<RowEntity> query_entities;
-    generateArrays(nq, dim, query_entities);
+    query_entities.resize(nq);
+//    generateArrays(nq, dim, query_entities);
+    std::copy(row_entities.begin(), row_entities.begin() + nq, query_entities.begin());
+
     milvus::TopKQueryResult topk_result;
     assert_status(engine->Search(collection_name, weight,
                                  query_entities, topk, query_json.dump(), topk_result));
@@ -114,18 +117,18 @@ main() {
     std::string port = "19530";
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
 
-    changeType(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
-    changeType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
-    changeType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}});
-    changeType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 20}}, {{"nprobe", 20}});
-    changeType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 20}}, {{"nprobe", 20}});
-    changeType(engine, milvus::IndexType::RNSG,
-               {{"search_length", 45}, {"out_degree", 50}, {"candidate_pool_size", 300}, {"knng", 100}},
-               {{"search_length", 100}});
-    changeType(engine, milvus::IndexType::HNSW,
-               {{"M",16}, {"efConstruction", 500}},
-               {{"ef", 64}});
-    changeType(engine, milvus::IndexType::ANNOY,
-               {{"n_trees", 8}},
-               {{"search_k", -1}});
+    testIndexType(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
+    testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
+    testIndexType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}});
+    testIndexType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 20}}, {{"nprobe", 20}});
+    testIndexType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 20}}, {{"nprobe", 20}});
+    testIndexType(engine, milvus::IndexType::RNSG,
+                  {{"search_length", 45}, {"out_degree", 50}, {"candidate_pool_size", 300}, {"knng", 100}},
+                  {{"search_length", 100}});
+    testIndexType(engine, milvus::IndexType::HNSW,
+                  {{"M", 16}, {"efConstruction", 500}},
+                  {{"ef", 64}});
+    testIndexType(engine, milvus::IndexType::ANNOY,
+                  {{"n_trees", 8}},
+                  {{"search_k", -1}});
 }
