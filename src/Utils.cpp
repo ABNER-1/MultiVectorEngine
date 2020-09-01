@@ -180,7 +180,7 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                 nodes.emplace_back(cur_id, (p_dists[i][li] * -weight[i]), 0, false, num_group);
                 hash_tbl[cur_id] = pos;
             }
-            if (!nodes[pos].result_flag && nodes[pos].lb > nodes[result_set.top()].lb) {
+            if (!nodes[pos].result_flag && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
                 nodes[pos].result_flag = true;
                 result_set.emplace(pos);
                 if (result_set.size() > TopK) {

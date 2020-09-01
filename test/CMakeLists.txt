@@ -1,6 +1,6 @@
 
 
-add_executable(test_ip testIP.cpp)
+add_executable(test_ip test_ip.cpp utils.cpp)
 
 target_link_libraries(test_ip
         multi_vector
@@ -15,7 +15,7 @@ target_link_libraries(test_nra
         pthread)
 
 
-add_executable(test_l2 test_l2.cpp)
+add_executable(test_l2 test_l2.cpp utils.cpp)
 
 target_link_libraries(test_l2
         multi_vector
