@@ -35,3 +35,4 @@ target_link_libraries(brute_force
         multi_vector
         milvus_sdk
         pthread)
+
