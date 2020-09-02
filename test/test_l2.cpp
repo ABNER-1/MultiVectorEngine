@@ -18,10 +18,6 @@ main() {
                   {{"nlist", 1024}, {"m", 16}},
                   {{"nprobe", 20}},
                   milvus::MetricType::L2);
-    testIndexType(engine, milvus::IndexType::IVFPQ,
-                  {{"nlist", 1024}, {"m", 16}},
-                  {{"nprobe", 20}},
-                  milvus::MetricType::L2);
     testIndexType(engine, milvus::IndexType::RNSG,
                   {{"search_length", 45}, {"out_degree", 50}, {"candidate_pool_size", 300}, {"knng", 100}},
                   {{"search_length", 100}}, milvus::MetricType::L2);

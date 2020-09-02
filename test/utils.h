@@ -20,6 +20,11 @@ generateArrays(int nq, const std::vector<int64_t>& dimensions,
 void
 generateIds(int nq, std::vector<int64_t>& id_arrays);
 
+int
+readArrays(const std::string& file_name, const std::vector<int64_t>& dimensions,
+           std::vector<milvus::multivector::RowEntity>& row_entities,
+           int page_num = 10000, int page = 0);
+
 void
 showResult(const milvus::TopKQueryResult& topk_query_result);
 
@@ -34,7 +39,7 @@ void
 load_data(const std::string& filename,
           std::vector<std::vector<float>>& vector_data,
           unsigned& num, unsigned& dim,
-          int page_num = 0, int page = 0);
+          int page_num = 10000, int page = 0);
 
 void
 split_data(const std::vector<std::vector<float>>& raw_data,

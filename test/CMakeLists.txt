@@ -29,3 +29,4 @@ target_link_libraries(test_nra2
         milvus_sdk
         pthread)
 
+add_executable(test_main main.cpp)
