@@ -11,7 +11,8 @@ int main() {
     std::string file_name = "/data/gist/gist_query.fvecs";
 
 //    testIndexType(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
-    testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
+    testIndexTypeIP(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 1024}});
+//    testIndexTypeIP(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, {{"nprobe", 20}});
 //    testIndexType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}});
 //    testIndexType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 48}}, {{"nprobe", 20}});
 //    testIndexType(engine, milvus::IndexType::IVFPQ, {{"nlist", 1024}, {"m", 48}}, {{"nprobe", 20}});

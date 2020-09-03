@@ -1,20 +1,15 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "utils.h"
 
 int
 main() {
-    std::vector<int> new_arrays;
-    for (int i = 0; i < 20; ++i) {
-        new_arrays.push_back(i);
-    }
-    std::vector<int> zero_idx{1, 9, 10, 18};
-//    std::sort(zero_idx.begin(), zero_idx.end(), std::greater<>());
-    for (auto idx : zero_idx) {
-        new_arrays.erase(new_arrays.begin() + idx);
-//        id_arrays.erase(id_arrays.begin() + idx);
-    }
-    for (auto i : new_arrays) {
-        std::cout << i << std::endl;
-    }
+    std::string file_name = "/home/abner/vector/glove-200-angular.hdf5";
+    std::vector<std::vector<float>> vector_data;
+//    unsigned dim, num;
+    std::vector<milvus::multivector::RowEntity> row_entity;
+    readArraysFromHdf5(file_name, {64, 64, 72}, row_entity,
+                       10000, 2, "train");
+    std::cout << "endl" << std::endl;
 }

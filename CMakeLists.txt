@@ -9,8 +9,10 @@ set(SDK_INCLUDE ${SDK_HOME}/include)
 message("sdk home: ${SDK_HOME}")
 
 include_directories(${SDK_INCLUDE})
+include_directories("/usr/include/hdf5/serial")
 include_directories(include)
 link_directories(${SDK_HOME})
+#link_directories("/usr/lib/x86_64-linux-gnu")
 
 add_subdirectory(src)
 include_directories(${PROJECT_SOURCE_DIR}/include)

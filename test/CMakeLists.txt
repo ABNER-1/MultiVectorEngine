@@ -5,6 +5,8 @@ add_executable(test_ip test_ip.cpp utils.cpp)
 target_link_libraries(test_ip
         multi_vector
         milvus_sdk
+        hdf5_serial
+        hdf5_cpp
         pthread)
 
 add_executable(test_nra test_nra.cpp)
@@ -36,3 +38,8 @@ target_link_libraries(brute_force
         milvus_sdk
         pthread)
 
+add_executable(test_utils main.cpp utils.cpp)
+target_link_libraries(test_utils
+        hdf5_serial
+        hdf5_cpp
+        milvus_sdk)
