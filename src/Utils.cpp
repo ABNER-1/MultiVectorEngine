@@ -129,8 +129,9 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
     std::vector<NRANode> nodes;
     std::unordered_map<int64_t, size_t> hash_tbl;
     float cur_max_estimate_value = 0.0;
-    auto cmp = [&](size_t i, size_t j) { return nodes[i].lb > nodes[j].lb; };
+    auto cmp = [&](size_t i, size_t j) { return nodes[i].occurs_time == nodes[j].occurs_time ? nodes[i].lb > nodes[j].lb : nodes[i].occurs_time > nodes[j].occurs_time; };
     std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
+    std::vector<size_t> tmp_queue;
     for (auto i = 0; i < num_group; ++ i) {
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
@@ -148,6 +149,7 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
         }
 //        nodes.emplace_back(*p_ids[i], ((*p_dists[i]) * (-weight[i])), 0, false, num_group);
         nodes[pos].group_flags[i] = true;
+        nodes[pos].occurs_time ++;
 //        hash_tbl[*p_ids[i]] = i;
 //        result_set.emplace(i);
     }
@@ -194,6 +196,7 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                 }
             }
             nodes[pos].group_flags[i] = true;
+            nodes[pos].occurs_time ++;
         }
         for (auto i = 0; i < new_boy.size(); ++ i)
             nodes[new_boy[i]].ub = cur_max_estimate_value;
@@ -207,10 +210,12 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
             }
         }
         for (auto i = 0; i < result_set.size(); ++ i) {
-            auto tp = result_set.top();
+            tmp_queue.push_back(result_set.top());
             result_set.pop();
-            result_set.emplace(tp);
         }
+        for (auto i = 0; i < tmp_queue.size(); ++ i)
+            result_set.emplace(tmp_queue[i]);
+        std::vector<size_t>().swap(tmp_queue);
         if (!find_flag)
             max_unselected_ub = std::numeric_limits<float>::max();
         if (nodes[result_set.top()].lb >= max_unselected_ub) {
