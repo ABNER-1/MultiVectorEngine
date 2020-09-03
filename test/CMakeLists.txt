@@ -14,6 +14,8 @@ add_executable(test_nra test_nra.cpp)
 target_link_libraries(test_nra
         multi_vector
         milvus_sdk
+        hdf5_serial
+        hdf5_cpp
         pthread)
 
 
@@ -22,6 +24,8 @@ add_executable(test_l2 test_l2.cpp utils.cpp)
 target_link_libraries(test_l2
         multi_vector
         milvus_sdk
+        hdf5_serial
+        hdf5_cpp
         pthread)
 
 add_executable(test_nra2 test_nra2.cpp)
@@ -29,6 +33,8 @@ add_executable(test_nra2 test_nra2.cpp)
 target_link_libraries(test_nra2
         multi_vector
         milvus_sdk
+        hdf5_serial
+        hdf5_cpp
         pthread)
 
 add_executable(brute_force brute_force.cpp)
@@ -36,6 +42,8 @@ add_executable(brute_force brute_force.cpp)
 target_link_libraries(brute_force
         multi_vector
         milvus_sdk
+        hdf5_serial
+        hdf5_cpp
         pthread)
 
 add_executable(test_utils main.cpp utils.cpp)

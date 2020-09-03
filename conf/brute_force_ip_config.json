@@ -1,0 +1,26 @@
+{
+  "group_num": 3,
+  "base_data_locations": [
+    "/home/zilliz/workspace/data/sift_h10000/data64.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data128.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data256.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data512.dat"
+  ],
+  "query_data_location": "/home/zilliz/workspace/data/sift_h10000/query.dat",
+  "dimensions": [
+    64,
+    64,
+    72
+  ],
+  "weights": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "nb": 1000000,
+  "nq": 10,
+  "topk": 10,
+  "metric_type": "IP",
+  "use_base_query": true
+}
