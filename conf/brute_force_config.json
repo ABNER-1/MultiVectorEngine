@@ -1,0 +1,27 @@
+{
+  "group_num": 4,
+  "base_data_locations": [
+    "/home/zilliz/workspace/data/sift_h10000/data64.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data128.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data256.dat",
+    "/home/zilliz/workspace/data/sift_h10000/data512.dat"
+  ],
+  "query_data_location": "/home/zilliz/workspace/data/sift_h10000/query.dat",
+  "dimensions": [
+    64,
+    128,
+    256,
+    512
+  ],
+  "weights": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+  ],
+  "nb": 10000,
+  "nq": 10,
+  "topk": 3,
+  "metric_type": "L2",
+  "use_base_query": true
+}
