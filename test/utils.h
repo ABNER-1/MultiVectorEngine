@@ -25,6 +25,11 @@ readArrays(const std::string& file_name, const std::vector<int64_t>& dimensions,
            std::vector<milvus::multivector::RowEntity>& row_entities,
            int page_num = 10000, int page = 0);
 
+int
+readArraysFromHdf5(const std::string& file_name, const std::vector<int64_t>& dimensions,
+                   std::vector<milvus::multivector::RowEntity>& row_entities,
+                   int page_num = 10000, int page = 0, const std::string& data_name = "train");
+
 void
 showResult(const milvus::TopKQueryResult& topk_query_result);
 
@@ -47,12 +52,29 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::MetricType metric_type = milvus::MetricType::IP);
 
 void
-load_data(const std::string& filename,
-          std::vector<std::vector<float>>& vector_data,
-          unsigned& num, unsigned& dim,
-          int page_num = 10000, int page = 0);
+testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
+                milvus::IndexType index_type,
+                const nlohmann::json& index_json,
+                const nlohmann::json& query_json,
+                milvus::MetricType metric_type = milvus::MetricType::IP);
+
+void
+loadDataFromHdf5(const std::string& filename,
+                 std::vector<std::vector<float>>& vector_data,
+                 unsigned& num, unsigned& dim, int page_num = 10000, int page = 0,
+                 const std::string& data_name = "train");
+
+void
+loadDataFromFvec(const std::string& filename,
+                 std::vector<std::vector<float>>& vector_data,
+                 unsigned& num, unsigned& dim,
+                 int page_num = 10000, int page = 0);
 
 void
 split_data(const std::vector<std::vector<float>>& raw_data,
            std::vector<std::vector<milvus::Entity>>& splited_data,
            const std::vector<int64_t>& dims);
+
+void
+compareResultWithH5(const milvus::TopKQueryResult& topk_query_result,
+                    const std::string& h5_file_name);
