@@ -103,7 +103,7 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
             return status;
         std::vector<milvus::Entity>().swap(container);
     }
-    Status stat = NoRandomAccessAlgorithm(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     return stat;
 }
 

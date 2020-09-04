@@ -14,14 +14,14 @@
     512
   ],
   "weights": [
-    0.25,
-    0.25,
-    0.25,
-    0.25
+    1,
+    1,
+    1,
+    1
   ],
   "nb": 10000,
   "nq": 10,
-  "topk": 3,
+  "topk": 10,
   "metric_type": "L2",
   "use_base_query": true
 }

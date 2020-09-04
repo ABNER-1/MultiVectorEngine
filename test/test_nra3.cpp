@@ -6,37 +6,40 @@ using namespace milvus::multivector;
 int main() {
     std::vector<milvus::TopKQueryResult> tqrs(3, milvus::TopKQueryResult(1, milvus::QueryResult()));
     // add the first group
-    for (auto i = 0; i < 5; ++ i)
-        tqrs[0][0].ids.push_back(5 - i);
+    tqrs[0][0].ids.push_back(1);
+    tqrs[0][0].ids.push_back(2);
+    tqrs[0][0].ids.push_back(5);
+    tqrs[0][0].ids.push_back(8);
+    tqrs[0][0].ids.push_back(3);
     tqrs[0][0].distances.push_back(0.1);
+    tqrs[0][0].distances.push_back(0.2);
     tqrs[0][0].distances.push_back(0.3);
+    tqrs[0][0].distances.push_back(0.4);
     tqrs[0][0].distances.push_back(0.5);
-    tqrs[0][0].distances.push_back(0.8);
-    tqrs[0][0].distances.push_back(1);
 
     // add the second group
-    tqrs[1][0].ids.push_back(5);
-    tqrs[1][0].ids.push_back(4);
     tqrs[1][0].ids.push_back(1);
     tqrs[1][0].ids.push_back(3);
-    tqrs[1][0].ids.push_back(2);
+    tqrs[1][0].ids.push_back(6);
+    tqrs[1][0].ids.push_back(9);
+    tqrs[1][0].ids.push_back(5);
     tqrs[1][0].distances.push_back(0.1);
     tqrs[1][0].distances.push_back(0.2);
     tqrs[1][0].distances.push_back(0.3);
-    tqrs[1][0].distances.push_back(0.7);
-    tqrs[1][0].distances.push_back(0.8);
+    tqrs[1][0].distances.push_back(0.4);
+    tqrs[1][0].distances.push_back(0.5);
 
     // add the third group
-    tqrs[2][0].ids.push_back(2);
-    tqrs[2][0].ids.push_back(5);
     tqrs[2][0].ids.push_back(1);
-    tqrs[2][0].ids.push_back(3);
     tqrs[2][0].ids.push_back(4);
-    tqrs[2][0].distances.push_back(0);
+    tqrs[2][0].ids.push_back(7);
+    tqrs[2][0].ids.push_back(10);
+    tqrs[2][0].ids.push_back(5);
     tqrs[2][0].distances.push_back(0.1);
     tqrs[2][0].distances.push_back(0.2);
-    tqrs[2][0].distances.push_back(0.6);
-    tqrs[2][0].distances.push_back(0.8);
+    tqrs[2][0].distances.push_back(0.3);
+    tqrs[2][0].distances.push_back(0.4);
+    tqrs[2][0].distances.push_back(0.5);
 
     for (auto i = 0; i < 3; ++ i) {
         std::cout << "the " << i + 1 << "th group: " << std::endl;
