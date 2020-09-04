@@ -23,15 +23,20 @@ bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_t
                              size_t nq_id,
                              int64_t TopK);
 
+bool NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
+                               milvus::QueryResult &result,
+                               const std::vector<float>& weight,
+                               int64_t TopK);
+
+bool NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
+                               milvus::QueryResult &result,
+                               const std::vector<float>& weight,
+                               int64_t TopK);
+
 bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                              milvus::QueryResult &result,
                              const std::vector<float>& weight,
                              int64_t TopK);
-
-void MultipleRecall(std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
-                               milvus::TopKQueryResult &result,
-                               size_t nq,
-                               int64_t TopK);
 
 } // namespace multivector
 } // namespace milvus

@@ -47,10 +47,10 @@ int main() {
         std::cout << "------------------------------------------------------------" << std::endl;
     }
     milvus::QueryResult result;
-    std::vector<float> weight = {-1, -1, -1};
-    NoRandomAccessAlgorithm(tqrs, result, weight, 2);
+    std::vector<float> weight = {1, 1, 1};
+    auto ok_ = NoRandomAccessAlgorithmIP(tqrs, result, weight, 2);
 
-    std::cout << "result: " << std::endl;
+    std::cout << "result is " << (ok_ ? "ok" : "not ok") << ": " << std::endl;
     for (auto i = 0; i < 2; ++ i) {
         std::cout << "id = " << result.ids[i] << ", dis = " << result.distances[i] << std::endl;
     }
