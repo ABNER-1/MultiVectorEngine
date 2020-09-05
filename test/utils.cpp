@@ -72,14 +72,20 @@ readArraysFromSplitedData(const std::vector<std::string>& file_names,
             const std::vector<int64_t>& dimensions,
            std::vector<milvus::multivector::RowEntity>& row_entities,
            int page_num, int page) {
+
+    row_entities.resize(page_num);
     for(auto i = 0; i< file_names.size(); ++i){
         auto & file_name = file_names[i];
         auto dim = dimensions[i];
         std::ifstream in(file_name.c_str(), std::ios::in);
+        in.precision(18);
         for (auto j = 0; j < page_num; ++j) {
-            for(auto k = 0; k < dim; ++i){
+            row_entities[j].emplace_back();
+            row_entities[j][i].float_data.resize(dim);
+            for(auto k = 0; k < dim; ++k){
                 in >> row_entities[j][i].float_data[k];
             }
+            normalizeVector(row_entities[j][i]);
         }
     }
     return row_entities.size();
@@ -102,6 +108,10 @@ showResult(const milvus::TopKQueryResult& topk_query_result) {
         std::cout << "    First is [id:" << result.ids[0] << "] [distance:" << result.distances[0] << "]" << std::endl;
         std::cout << "    The " << len << "th is [id:" << result.ids[len - 1]
                   << "] [distance:" << result.distances[len - 1] << "]" << std::endl;
+
+        for (int i = 0; i <result.ids.size() ; ++i) {
+            std::cout<< i <<" "<< result.ids[i]<<" "<<result.distances[i]<<std::endl;
+        }
     }
 }
 
@@ -200,7 +210,7 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         }
     };
 
-    std::vector<std::string> file_names = {""};
+    std::vector<std::string> file_names = {"/home/abner/vector/train64.txt", "/home/abner/vector/train64-1.txt", "/home/abner/vector/train72.txt"};
     auto collection_name = "test_collection25";
     std::vector<int64_t> dim{64, 64, 72};
     std::vector<int64_t> index_file_sizes{1024, 1024, 1024};
