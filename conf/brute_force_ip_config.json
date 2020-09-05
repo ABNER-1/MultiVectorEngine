@@ -1,12 +1,11 @@
 {
   "group_num": 3,
   "base_data_locations": [
-    "/home/zilliz/workspace/data/sift_h10000/data64.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data128.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data256.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data512.dat"
+    "/home/abner/vector/train64.txt",
+    "/home/abner/vector/train64-1.txt",
+    "/home/abner/vector/train72.txt"
   ],
-  "query_data_location": "/home/zilliz/workspace/data/sift_h10000/query.dat",
+  "query_data_location": "/home/abner/vector/train.dat",
   "dimensions": [
     64,
     64,
@@ -15,10 +14,9 @@
   "weights": [
     1,
     1,
-    1,
     1
   ],
-  "nb": 1000000,
+  "nb": 10000,
   "nq": 10,
   "topk": 10,
   "metric_type": "IP",
