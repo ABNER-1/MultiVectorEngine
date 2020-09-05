@@ -4,8 +4,10 @@
 #include <queue>
 #include <thread>
 #include <cmath>
+#include <chrono>
 #include <BaseEngine.h>
 #include "nlohmann/json.hpp"
+#include <omp.h>
 
 using json = nlohmann::json;
 
@@ -92,6 +94,7 @@ struct Compare {
 void Read(std::vector<milvus::multivector::RowEntity> &raw_data, std::ifstream &f, size_t thread_num) {
 //    std::cout.precision(8);
     f.precision(18);
+#pragma omp parallel for
     for (auto i = 0; i < rows; ++ i) {
         raw_data[thread_num][i].float_data.resize(dimensions[thread_num]);
         for (auto j = 0; j < dimensions[thread_num]; ++ j) {
@@ -284,17 +287,30 @@ int main(int argc, char **argv) {
         std::cout << "get config failed from config file: " << config_file << ", please check config file." << std::endl;
         return EXIT_FAILURE;
     }
+    std::chrono::high_resolution_clock::time_point ts, te;
     show_config();
 //    return EXIT_SUCCESS;
     std::vector<milvus::multivector::RowEntity> raw_data(vec_groups, milvus::multivector::RowEntity(rows, milvus::Entity()));
+    ts = std::chrono::high_resolution_clock::now();
     LoadRowData(raw_data);
+    te = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "LoadRowData costs " << search_duration << " ms." << std::endl;
     use_base_query ? GenQueryDataFromBase(raw_data) : GenQueryDataFromRandom();
     milvus::TopKQueryResult result;
 
     std::vector<milvus::multivector::RowEntity> query_data(vec_groups, milvus::multivector::RowEntity(nq, milvus::Entity()));
+    ts = std::chrono::high_resolution_clock::now();
     LoadQuery(query_data);
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "LoadQuery costs " << search_duration << " ms." << std::endl;
     result.resize(nq);
+    ts = std::chrono::high_resolution_clock::now();
     DoSearch(raw_data, query_data, result);
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "Search costs " << search_duration << " ms." << std::endl;
 
     show_result(result);
 
