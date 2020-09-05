@@ -67,6 +67,24 @@ readArraysFromHdf5(const std::string& file_name, const std::vector<int64_t>& dim
     return row_entities.size();
 }
 
+int
+readArraysFromSplitedData(const std::vector<std::string>& file_names,
+            const std::vector<int64_t>& dimensions,
+           std::vector<milvus::multivector::RowEntity>& row_entities,
+           int page_num, int page) {
+    for(auto i = 0; i< file_names.size(); ++i){
+        auto & file_name = file_names[i];
+        auto dim = dimensions[i];
+        std::ifstream in(file_name.c_str(), std::ios::in);
+        for (auto j = 0; j < page_num; ++j) {
+            for(auto k = 0; k < dim; ++i){
+                in >> row_entities[j][i].float_data[k];
+            }
+        }
+    }
+    return row_entities.size();
+}
+
 void
 generateIds(int nq, std::vector<int64_t>& id_arrays) {
     static int idx = 0;
@@ -182,42 +200,36 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         }
     };
 
-    std::string h5_file_name = "/home/abner/vector/glove-200-angular.hdf5";
+    std::vector<std::string> file_names = {""};
     auto collection_name = "test_collection25";
     std::vector<int64_t> dim{64, 64, 72};
     std::vector<int64_t> index_file_sizes{1024, 1024, 1024};
-    int nq = 100;
-    int topk = 100;
+    int nq = 10;
+    int topk = 10;
     std::vector<float> weight = {1, 1, 1};
 
     assert_status(engine->CreateCollection(collection_name, metric_type, dim, index_file_sizes));
 
     // generate insert data vector
-
     int vector_num = 10000;
     std::vector<RowEntity> query_entities;
     std::vector<std::vector<int64_t>> all_id_arrays;
     int page_id = 0;
     // generate query vector
     query_entities.resize(nq);
-    while (true) {
-        std::vector<RowEntity> row_entities;
-        vector_num = readArraysFromHdf5("/home/abner/vector/glove-200-angular.hdf5",
-                                        dim, row_entities, 10000, page_id);
-        if (vector_num == 0) break;
-//    generateArrays(vector_num, dim, row_entities);
-        std::vector<int64_t> id_arrays;
-        generateIds(vector_num, id_arrays);
 
-        assert_status(engine->Insert(collection_name, row_entities, id_arrays));
-        std::cout << "Insert " << vector_num << " into milvus." << std::endl;
-        all_id_arrays.emplace_back(std::move(id_arrays));
-        ++page_id;
-    }
-    readArraysFromHdf5(h5_file_name, dim, query_entities,
-                       10000, 0, "test");
-//    readArrays("/data/gist/gist_query.fvecs", dim, row_entities);
-//    generateArrays(nq, dim, query_entities);
+    std::vector<RowEntity> row_entities;
+    readArraysFromSplitedData(file_names, dim, row_entities, vector_num, page_id);
+    std::copy(row_entities.begin(), row_entities.begin() + nq, query_entities.begin());
+
+    std::vector<int64_t> id_arrays;
+    generateIds(vector_num, id_arrays);
+
+    assert_status(engine->Insert(collection_name, row_entities, id_arrays));
+    std::cout << "Insert " << vector_num << " into milvus." << std::endl;
+    all_id_arrays.emplace_back(std::move(id_arrays));
+
+
     assert_status(engine->CreateIndex(collection_name,
                                       index_type, index_json.dump()));
 
@@ -225,9 +237,7 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
     assert_status(engine->Search(collection_name, weight,
                                  query_entities, topk, query_json.dump(), topk_result));
-//    showResult(topk_result);
-
-    compareResultWithH5(topk_result, h5_file_name);
+    showResult(topk_result);
 
     assert_status(engine->DropIndex(collection_name));
     for (auto& id_arrays: all_id_arrays) {
