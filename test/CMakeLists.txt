@@ -49,6 +49,7 @@ add_executable(brute_force brute_force.cpp)
 target_link_libraries(brute_force
         multi_vector
         milvus_sdk
+        gomp
         hdf5_serial
         hdf5_cpp
         pthread)

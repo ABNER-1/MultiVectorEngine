@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "../test/utils.h"
 #include "MultiVectorCollectionL2.h"
 
 
@@ -116,10 +117,10 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
         tpk = topk;
-        threshold = topk << 3;
+        threshold = 2048;
         bool succ_flag = false;
         do {
-            tpk <<= 1;
+            tpk = std::min(threshold, tpk << 1);
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params, topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
