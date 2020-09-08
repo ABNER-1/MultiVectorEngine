@@ -116,7 +116,7 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
     topk_query_results.resize(entity_array.size());
     for (auto q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = topk;
+        tpk = std::max(topk, 50l);
         threshold = 2048;
         bool succ_flag = false;
         do {

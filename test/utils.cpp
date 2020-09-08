@@ -69,23 +69,23 @@ readArraysFromHdf5(const std::string& file_name, const std::vector<int64_t>& dim
 
 int
 readArraysFromSplitedData(const std::vector<std::string>& file_names,
-            const std::vector<int64_t>& dimensions,
-           std::vector<milvus::multivector::RowEntity>& row_entities,
-           int page_num, int page) {
+                          const std::vector<int64_t>& dimensions,
+                          std::vector<milvus::multivector::RowEntity>& row_entities,
+                          int page_num, int page) {
 
     row_entities.resize(page_num);
-    for(auto i = 0; i< file_names.size(); ++i){
-        auto & file_name = file_names[i];
+    for (auto i = 0; i < file_names.size(); ++i) {
+        auto& file_name = file_names[i];
         auto dim = dimensions[i];
         std::ifstream in(file_name.c_str(), std::ios::in);
         in.precision(18);
         for (auto j = 0; j < page_num; ++j) {
             row_entities[j].emplace_back();
             row_entities[j][i].float_data.resize(dim);
-            for(auto k = 0; k < dim; ++k){
+            for (auto k = 0; k < dim; ++k) {
                 in >> row_entities[j][i].float_data[k];
             }
-            normalizeVector(row_entities[j][i]);
+//            normalizeVector(row_entities[j][i]);
         }
     }
     return row_entities.size();
@@ -93,7 +93,7 @@ readArraysFromSplitedData(const std::vector<std::string>& file_names,
 
 void
 generateIds(int nq, std::vector<int64_t>& id_arrays) {
-    static int idx = 0;
+    static int idx = -1;
     for (int i = 0; i < nq; ++i) {
         id_arrays.push_back(++idx);
     }
@@ -101,6 +101,7 @@ generateIds(int nq, std::vector<int64_t>& id_arrays) {
 
 void
 showResult(const milvus::TopKQueryResult& topk_query_result) {
+    std::cout.precision(18);
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     for (auto& result : topk_query_result) {
         int len = result.ids.size();
@@ -109,8 +110,8 @@ showResult(const milvus::TopKQueryResult& topk_query_result) {
         std::cout << "    The " << len << "th is [id:" << result.ids[len - 1]
                   << "] [distance:" << result.distances[len - 1] << "]" << std::endl;
 
-        for (int i = 0; i <result.ids.size() ; ++i) {
-            std::cout<< i <<" "<< result.ids[i]<<" "<<result.distances[i]<<std::endl;
+        for (int i = 0; i < result.ids.size(); ++i) {
+            std::cout << i << " " << result.ids[i] << " " << result.distances[i] << std::endl;
         }
     }
 }
@@ -121,19 +122,15 @@ showResultL2(const milvus::TopKQueryResult& topk_query_result) {
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     int cnt = 0;
     for (auto& result : topk_query_result) {
-        std::cout << "query: " << ++ cnt << std::endl;
+        std::cout << "query: " << ++cnt << std::endl;
         auto show_len = 10 < result.ids.size() ? 3 : result.ids.size();
-        for (auto i = 0; i < show_len; ++ i) {
+        for (auto i = 0; i < show_len; ++i) {
             std::cout << "(" << result.ids[i] << ", " << result.distances[i] << ")";
             if (i == show_len - 1)
                 std::cout << std::endl;
             else
                 std::cout << " ";
         }
-//        std::cout << "  This query has " << len << " result." << std::endl;
-//        std::cout << "    First is [id:" << result.ids[0] << "] [distance:" << result.distances[0] << "]" << std::endl;
-//        std::cout << "    The " << len << "th is [id:" << result.ids[len - 1]
-//                  << "] [distance:" << result.distances[len - 1] << "]" << std::endl;
     }
 }
 
@@ -203,7 +200,8 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
                 milvus::IndexType index_type,
                 const nlohmann::json& index_json,
                 const nlohmann::json& query_json,
-                milvus::MetricType metric_type) {
+                milvus::MetricType metric_type,
+                const std::string& strategy) {
     using namespace milvus::multivector;
     auto assert_status = [](milvus::Status status) {
         if (!status.ok()) {
@@ -211,7 +209,8 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         }
     };
 
-    std::vector<std::string> file_names = {"/home/abner/vector/train64.txt", "/home/abner/vector/train64-1.txt", "/home/abner/vector/train72.txt"};
+    std::vector<std::string> file_names =
+        {"/home/abner/vector/train64.txt", "/home/abner/vector/train64-1.txt", "/home/abner/vector/train72.txt"};
     auto collection_name = "test_collection25";
     std::vector<int64_t> dim{64, 64, 72};
     std::vector<int64_t> index_file_sizes{1024, 1024, 1024};
@@ -219,7 +218,7 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     int topk = 10;
     std::vector<float> weight = {1, 1, 1};
 
-    assert_status(engine->CreateCollection(collection_name, metric_type, dim, index_file_sizes));
+    assert_status(engine->CreateCollection(collection_name, metric_type, dim, index_file_sizes, strategy));
 
     // generate insert data vector
     int vector_num = 10000;
@@ -239,7 +238,6 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     assert_status(engine->Insert(collection_name, row_entities, id_arrays));
     std::cout << "Insert " << vector_num << " into milvus." << std::endl;
     all_id_arrays.emplace_back(std::move(id_arrays));
-
 
     assert_status(engine->CreateIndex(collection_name,
                                       index_type, index_json.dump()));
@@ -401,7 +399,6 @@ compareResultWithH5(const milvus::TopKQueryResult& topk_query_result,
 
 }
 
-
 void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
@@ -417,7 +414,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     };
 
     srand((unsigned)time(nullptr));
-    auto collection_name = "l2_test_collection" + std::to_string(random()%100);
+    auto collection_name = "l2_test_collection" + std::to_string(random() % 100);
     int vec_group_num = config.at("group_num");
     int nq = config.at("nq");
     int topk = config.at("topk");
@@ -427,8 +424,11 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     std::vector<std::string> base_data_locations;
     std::vector<float> weights;
     std::vector<int64_t> acc_dims(vec_group_num, 0);
-    dim.clear();index_file_sizes.clear();base_data_locations.clear();weights.clear();
-    for (auto i = 0; i < vec_group_num; ++ i) {
+    dim.clear();
+    index_file_sizes.clear();
+    base_data_locations.clear();
+    weights.clear();
+    for (auto i = 0; i < vec_group_num; ++i) {
         base_data_locations.emplace_back(config.at("base_data_locations")[i]);
         dim.emplace_back(config.at("dimensions")[i]);
         acc_dims[i] = i ? acc_dims[i - 1] + dim[i - 1] : 0;
@@ -441,24 +441,24 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 // generate insert data vector
     std::vector<RowEntity> query_entities(nq, RowEntity(vec_group_num, milvus::Entity()));
     std::vector<std::vector<int64_t>> all_id_arrays;
-            // generate query vector
+    // generate query vector
 //    query_entities.resize(nq);
     std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
-    for (auto i = 0; i < vec_group_num; ++ i) {
+    for (auto i = 0; i < vec_group_num; ++i) {
         std::ifstream fin(base_data_locations[i], std::ios::in);
         fin.precision(18);
-        for (auto j = 0; j < vector_num; ++ j) {
+        for (auto j = 0; j < vector_num; ++j) {
             row_entities[j][i].float_data.resize(dim[i]);
-            for (auto k = 0; k < dim[i]; ++ k) {
+            for (auto k = 0; k < dim[i]; ++k) {
                 fin >> row_entities[j][i].float_data[k];
             }
         }
         fin.close();
     }
-    for (auto i = 0; i < nq; ++ i) {
-        for (auto j = 0; j < vec_group_num; ++ j) {
+    for (auto i = 0; i < nq; ++i) {
+        for (auto j = 0; j < vec_group_num; ++j) {
             query_entities[i][j].float_data.resize(dim[j]);
-            for (auto k = 0; k < dim[j]; ++ k)
+            for (auto k = 0; k < dim[j]; ++k)
                 query_entities[i][j].float_data[k] = row_entities[i][j].float_data[k];
         }
     }
