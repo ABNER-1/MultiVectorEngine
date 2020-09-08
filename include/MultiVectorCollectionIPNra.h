@@ -1,17 +1,16 @@
 #pragma once
-#include "MilvusApi.h"
-#include "Status.h"
+
 #include "MultiVectorCollection.h"
 
 
 namespace milvus {
 namespace multivector {
 
-class MultiVectorCollectionL2 : public MultiVectorCollection {
+class MultiVectorCollectionIPNra : public MultiVectorCollection {
  public:
-    MultiVectorCollectionL2(const std::shared_ptr<milvus::Connection> server_conn,
-                            const std::string &collection_name)
-        : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::L2) {}
+    MultiVectorCollectionIPNra(const std::shared_ptr<milvus::Connection> server_conn,
+                               const std::string &collection_name)
+        : MultiVectorCollection(server_conn, collection_name, milvus::MetricType::IP) {}
 
     Status
     CreateCollection(const std::vector<int64_t> &dimensions,
@@ -39,18 +38,16 @@ class MultiVectorCollectionL2 : public MultiVectorCollection {
            int64_t topk, const std::string &extra_params,
            milvus::TopKQueryResult &topk_query_results) override;
 
+ private:
     Status
     SearchImpl(const std::vector<float> &weight,
-           const std::vector<milvus::Entity> &entity_query,
-           int64_t topk, const std::string &extra_params,
-           QueryResult &query_results,
-           int64_t tpk);
-
- private:
-
+               const std::vector<milvus::Entity> &entity_query,
+               int64_t topk, const std::string &extra_params,
+               QueryResult &query_results,
+               int64_t tpk);
 };
 
-using MultiVectorCollectionL2Ptr = std::shared_ptr<MultiVectorCollectionL2>;
+using MultiVectorCollectionIPNraPtr = std::shared_ptr<MultiVectorCollectionIPNra>;
 
 } // namespace multivector
 } // namespace milvus

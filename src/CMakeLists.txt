@@ -2,6 +2,7 @@ set(multi_vector_srcs
         MultiVectorEngine.cpp
         MultiVectorCollectionIP.cpp
         MultiVectorCollectionL2.cpp
+        MultiVectorCollectionIPNra.cpp
         Utils.cpp)
 
 add_library(multi_vector SHARED ${multi_vector_srcs})
