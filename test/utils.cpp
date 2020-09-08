@@ -117,6 +117,7 @@ showResult(const milvus::TopKQueryResult& topk_query_result) {
 
 void
 showResultL2(const milvus::TopKQueryResult& topk_query_result) {
+    std::cout.precision(18);
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     int cnt = 0;
     for (auto& result : topk_query_result) {
