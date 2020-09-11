@@ -73,6 +73,11 @@ MultiVectorCollectionIP::DropIndex() {
 }
 
 Status
+MultiVectorCollectionIP::Flush() {
+    return this->conn_ptr_->DropIndex(this->collection_name_);
+}
+
+Status
 MultiVectorCollectionIP::Search(const std::vector<float>& weight,
                                 const std::vector<RowEntity>& entity_array,
                                 int64_t topk, const std::string& extra_params,

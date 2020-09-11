@@ -45,6 +45,9 @@ class MultiVectorEngine : public BaseEngine {
     DropIndex(const std::string& collection_name) override;
 
     Status
+    Flush(const std::string& collection_name) override;
+
+    Status
     Search(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
            int64_t topk, const std::string& extra_params,

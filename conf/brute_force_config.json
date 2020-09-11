@@ -1,27 +1,25 @@
 {
-  "group_num": 4,
+  "group_num": 2,
   "base_data_locations": [
-    "/home/zilliz/workspace/data/sift_h10000/data64.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data128.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data256.dat",
-    "/home/zilliz/workspace/data/sift_h10000/data512.dat"
+    "/home/zilliz/workspace/data/im2recipe/recipe1M_model_all/results_train/data_img.txt",
+    "/home/zilliz/workspace/data/im2recipe/recipe1M_model_all/results_train/data_rec.txt"
   ],
-  "query_data_location": "/home/zilliz/workspace/data/sift_h10000/query.dat",
+  "query_data_locations": [
+    "/home/zilliz/workspace/data/im2recipe/recipe1M_model_all/results_test/data_img.txt",
+    "/home/zilliz/workspace/data/im2recipe/recipe1M_model_all/results_test/data_rec.txt"
+  ],
   "dimensions": [
-    64,
-    128,
-    256,
-    512
+    1024,
+    1024
   ],
   "weights": [
-    1,
-    1,
-    1,
-    1
+    0.6,
+    0.4
   ],
-  "nb": 10000,
+  "nb": 238459,
   "nq": 10,
   "topk": 10,
+  "precision": 7,
   "metric_type": "L2",
-  "use_base_query": true
+  "use_base_query": false
 }

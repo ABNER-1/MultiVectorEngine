@@ -1,3 +1,4 @@
+#include <chrono>
 #include "utils.h"
 //#include <hdf5/serial/hdf5.h>
 //#include <hdf5/serial/H5Cpp.h>
@@ -100,6 +101,13 @@ generateIds(int nq, std::vector<int64_t>& id_arrays) {
 }
 
 void
+generateIds(int nq, std::vector<int64_t>& id_arrays, int base_id) {
+    for (int i = 0; i < nq; ++i) {
+        id_arrays.push_back(++ base_id);
+    }
+}
+
+void
 showResult(const milvus::TopKQueryResult& topk_query_result) {
     std::cout.precision(18);
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
@@ -118,7 +126,7 @@ showResult(const milvus::TopKQueryResult& topk_query_result) {
 
 void
 showResultL2(const milvus::TopKQueryResult& topk_query_result) {
-    std::cout.precision(18);
+    std::cout.precision(8);
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     int cnt = 0;
     for (auto& result : topk_query_result) {
@@ -418,22 +426,30 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     int vec_group_num = config.at("group_num");
     int nq = config.at("nq");
     int topk = config.at("topk");
+    int max_dim = 0;
+    int precision = config.at("precision");
     int vector_num = config.at("nb");
+    std::chrono::high_resolution_clock::time_point ts, te;
     std::vector<int64_t> dim;
     std::vector<int64_t> index_file_sizes;
     std::vector<std::string> base_data_locations;
+    std::vector<std::string> query_data_locations;
     std::vector<float> weights;
     std::vector<int64_t> acc_dims(vec_group_num, 0);
     dim.clear();
     index_file_sizes.clear();
     base_data_locations.clear();
+    query_data_locations.clear();
     weights.clear();
     for (auto i = 0; i < vec_group_num; ++i) {
         base_data_locations.emplace_back(config.at("base_data_locations")[i]);
+        query_data_locations.emplace_back(config.at("query_data_locations")[i]);
         dim.emplace_back(config.at("dimensions")[i]);
+        if(max_dim < config.at("dimensions")[i])
+            max_dim = config.at("dimensions")[i];
         acc_dims[i] = i ? acc_dims[i - 1] + dim[i - 1] : 0;
         weights.emplace_back(config.at("weights")[i]);
-        index_file_sizes.push_back(1024);
+        index_file_sizes.push_back(2048);
     }
 
     assert_status(engine->CreateCollection(collection_name, metric_type, dim, index_file_sizes));
@@ -444,9 +460,15 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     // generate query vector
 //    query_entities.resize(nq);
     std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
+    std::vector<int64_t> ids;
+    generateIds(vector_num, ids, -1);
+    int64_t limit_insert = 256 * 1024 * 1024;
+    auto limit_insert_rows = limit_insert / 4 / max_dim;
+    std::cout << "limit insert rows is: " << limit_insert_rows << std::endl;
+    ts = std::chrono::high_resolution_clock::now();
     for (auto i = 0; i < vec_group_num; ++i) {
         std::ifstream fin(base_data_locations[i], std::ios::in);
-        fin.precision(18);
+        fin.precision(precision);
         for (auto j = 0; j < vector_num; ++j) {
             row_entities[j][i].float_data.resize(dim[i]);
             for (auto k = 0; k < dim[i]; ++k) {
@@ -455,6 +477,47 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         }
         fin.close();
     }
+    te = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "LoadRowData costs " << search_duration << " ms." << std::endl;
+    int insert_cnt = 0;
+    ts = std::chrono::high_resolution_clock::now();
+    for (auto i = 0; i < vector_num; i += limit_insert_rows) {
+        auto lb = i;
+        auto ub = (i + limit_insert_rows > vector_num) ? vector_num : i + limit_insert_rows;
+        std::vector<RowEntity> insert_batch(ub - lb, RowEntity(vec_group_num, milvus::Entity()));
+        std::vector<int64_t> ids_batch(ub - lb);
+        for (auto ii = lb; ii < ub; ++ ii) {
+            ids_batch[ii - i] = ids[ii];
+            for (auto j = 0; j < vec_group_num; ++ j) {
+                insert_batch[ii - i][j].float_data.resize(dim[j]);
+                for (auto k = 0; k < dim[j]; ++ k)
+                    insert_batch[ii - i][j].float_data[k] = row_entities[ii][j].float_data[k];
+            }
+        }
+        insert_cnt += (ub - lb);
+        assert_status(engine->Insert(collection_name, insert_batch, ids_batch));
+        std::cout << "Insert " << ub - lb << " vectors into milvus." << std::endl;
+        std::vector<RowEntity>().swap(insert_batch);
+        std::vector<int64_t>().swap(ids_batch);
+    }
+    assert_status(engine->Flush(collection_name));
+    te = std::chrono::high_resolution_clock::now();
+    std::cout << "Insert " << insert_cnt << "/" << vector_num << " vectors into milvus." << std::endl;
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "Insert data costs " << search_duration << " ms." << std::endl;
+    for (auto i = 0; i < vec_group_num; ++i) {
+        std::ifstream fin(query_data_locations[i], std::ios::in);
+        fin.precision(precision);
+        for (auto j = 0; j < nq; ++j) {
+            query_entities[j][i].float_data.resize(dim[i]);
+            for (auto k = 0; k < dim[i]; ++k) {
+                fin >> query_entities[j][i].float_data[k];
+            }
+        }
+        fin.close();
+    }
+    /*
     for (auto i = 0; i < nq; ++i) {
         for (auto j = 0; j < vec_group_num; ++j) {
             query_entities[i][j].float_data.resize(dim[j]);
@@ -462,14 +525,19 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
                 query_entities[i][j].float_data[k] = row_entities[i][j].float_data[k];
         }
     }
-    std::vector<int64_t> ids;
-    generateIds(vector_num, ids);
-    assert_status(engine->Insert(collection_name, row_entities, ids));
-    std::cout << "Insert " << vector_num << " vectors into milvus." << std::endl;
+    */
+    ts = std::chrono::high_resolution_clock::now();
     assert_status(engine->CreateIndex(collection_name, index_type, index_json.dump()));
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "CreateIndex costs " << search_duration << " ms." << std::endl;
 
     milvus::TopKQueryResult topk_result;
+    ts = std::chrono::high_resolution_clock::now();
     assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json.dump(), topk_result));
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "Search costs " << search_duration << " ms." << std::endl;
     showResultL2(topk_result);
 
     assert_status(engine->DropIndex(collection_name));

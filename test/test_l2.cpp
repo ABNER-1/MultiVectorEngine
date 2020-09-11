@@ -28,7 +28,7 @@ main(int argc, char **argv) {
     testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
     testIndexType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
     testIndexType(engine, milvus::IndexType::IVFPQ,
-                  {{"nlist", 1024}, {"m", 16}},
+                  {{"nlist", 1024}, {"m", 32}},
                   {{"nprobe", 20}}, config,
                   milvus::MetricType::L2);
     testIndexType(engine, milvus::IndexType::RNSG,

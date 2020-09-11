@@ -39,6 +39,9 @@ class BaseEngine {
     DropIndex(const std::string& collection_name) = 0;
 
     virtual Status
+    Flush(const std::string& collection_name) = 0;
+
+    virtual Status
     Search(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
            int64_t topk, const std::string& extra_params,

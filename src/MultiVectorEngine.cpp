@@ -60,6 +60,11 @@ MultiVectorEngine::DropIndex(const std::string& collection_name) {
 }
 
 Status
+MultiVectorEngine::Flush(const std::string& collection_name) {
+    return getOrFetchCollectionPtr(collection_name)->Flush();
+}
+
+Status
 MultiVectorEngine::Search(const std::string& collection_name,
                           const std::vector<float>& weight,
                           const std::vector<RowEntity>& entity_array,
