@@ -35,6 +35,9 @@ class MultiVectorCollection {
     DropIndex() = 0;
 
     virtual Status
+    Flush() = 0;
+
+    virtual Status
     Search(const std::vector<float> &weight,
            const std::vector<std::vector<milvus::Entity>> &entity_array,
            int64_t topk, const std::string &extra_params,

@@ -84,6 +84,19 @@ MultiVectorCollectionL2::DropIndex() {
 }
 
 Status
+MultiVectorCollectionL2::Flush() {
+    return conn_ptr_->Flush(child_collection_names_);
+    /*
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        auto status = conn_ptr_->Flush(child_collection_names_[i]);
+        if (!status.ok())
+            return status;
+    }
+    return Status::OK();
+    */
+}
+
+Status
 MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     const std::vector<milvus::Entity>& entity_query,
                                     int64_t topk,
