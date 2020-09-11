@@ -34,6 +34,9 @@ void
 showResult(const milvus::TopKQueryResult& topk_query_result);
 
 void
+showResultL2(const milvus::TopKQueryResult& topk_query_result);
+
+void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
               const nlohmann::json& index_json,
@@ -41,11 +44,20 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::MetricType metric_type = milvus::MetricType::IP);
 
 void
+testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
+              milvus::IndexType index_type,
+              const nlohmann::json& index_json,
+              const nlohmann::json& query_json,
+              const nlohmann::json& config,
+              milvus::MetricType metric_type = milvus::MetricType::IP);
+
+void
 testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
                 milvus::IndexType index_type,
                 const nlohmann::json& index_json,
                 const nlohmann::json& query_json,
-                milvus::MetricType metric_type = milvus::MetricType::IP);
+                milvus::MetricType metric_type = milvus::MetricType::IP,
+                const std::string& strategy = "default");
 
 void
 loadDataFromHdf5(const std::string& filename,

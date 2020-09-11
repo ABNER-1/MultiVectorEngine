@@ -5,6 +5,7 @@
 #include <MultiVectorEngine.h>
 #include "MultiVectorCollectionIP.h"
 #include "MultiVectorCollectionL2.h"
+#include "MultiVectorCollectionIPNra.h"
 
 namespace milvus {
 namespace multivector {
@@ -19,8 +20,9 @@ Status
 MultiVectorEngine::CreateCollection(const std::string& collection_name,
                                     milvus::MetricType metric_type,
                                     const std::vector<int64_t>& dimensions,
-                                    const std::vector<int64_t>& index_file_sizes) {
-    auto status = createCollectionPtr(collection_name, metric_type);
+                                    const std::vector<int64_t>& index_file_sizes,
+                                    const std::string& strategy) {
+    auto status = createCollectionPtr(collection_name, metric_type, strategy);
     if (!status.ok()) {
         std::cout << "[ERROR] create collection ptr error: " << status.message() << std::endl;
     }
@@ -63,20 +65,24 @@ MultiVectorEngine::Search(const std::string& collection_name,
                           const std::vector<RowEntity>& entity_array,
                           int64_t topk, const std::string& extra_params,
                           milvus::TopKQueryResult& topk_query_results) {
-    return getOrFetchCollectionPtr(collection_name)->Search(weight,
-                                                            entity_array,
-                                                            topk,
-                                                            extra_params,
-                                                            topk_query_results);
+    return getOrFetchCollectionPtr(collection_name)->Search(weight, entity_array, topk,
+                                                            extra_params, topk_query_results);
 }
 
 Status
 MultiVectorEngine::createCollectionPtr(const std::string& collection_name,
-                                       milvus::MetricType metric_type) {
+                                       milvus::MetricType metric_type,
+                                       const std::string& strategy) {
     MultiVectorCollectionPtr collection_ptr = nullptr;
     if (metric_type == milvus::MetricType::IP) {
-        collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
-            std::make_shared<MultiVectorCollectionIP>(this->conn_ptr_, collection_name));
+        if (strategy != "default") {
+            collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
+                std::make_shared<MultiVectorCollectionIPNra>(this->conn_ptr_, collection_name));
+        } else {
+            collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
+                std::make_shared<MultiVectorCollectionIP>(this->conn_ptr_, collection_name));
+        }
+
     } else if (metric_type == milvus::MetricType::L2) {
         collection_ptr = std::static_pointer_cast<MultiVectorCollection>(
             std::make_shared<MultiVectorCollectionL2>(this->conn_ptr_, collection_name));
