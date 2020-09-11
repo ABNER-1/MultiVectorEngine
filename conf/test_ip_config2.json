@@ -1,0 +1,26 @@
+{
+  "group_num": 2,
+  "base_data_locations": [
+    "/home/abner/recipe1M_model_all/results_train/data_img.txt",
+    "/home/abner/recipe1M_model_all/results_train/data_rec.txt"
+  ],
+  "test_data_locations": [
+    "/home/abner/recipe1M_model_all/results_test/data_img.txt",
+    "/home/abner/recipe1M_model_all/results_test/data_rec.txt"
+  ],
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "weights": [
+    1.0,
+    1.0
+  ],
+  "nb": 10000,
+  "nq": 10000,
+  "query_number": 100,
+  "topk": 50,
+  "dataset_lines": 238459,
+  "metric_type": "IP",
+  "result_prefix": "./ip/ip_result"
+}

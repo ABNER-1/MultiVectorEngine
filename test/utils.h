@@ -18,6 +18,9 @@ generateArrays(int nq, const std::vector<int64_t>& dimensions,
                std::vector<milvus::multivector::RowEntity>& row_entities);
 
 void
+resetIds();
+
+void
 generateIds(int nq, std::vector<int64_t>& id_arrays);
 
 int
@@ -29,6 +32,12 @@ int
 readArraysFromHdf5(const std::string& file_name, const std::vector<int64_t>& dimensions,
                    std::vector<milvus::multivector::RowEntity>& row_entities,
                    int page_num = 10000, int page = 0, const std::string& data_name = "train");
+
+int
+readArraysFromSplitedData(const std::vector<std::string>& file_names,
+                          const std::vector<int64_t>& dimensions,
+                          std::vector<milvus::multivector::RowEntity>& row_entities,
+                          int page_num = 10000, int page = 0, int lines=10000);
 
 void
 showResult(const milvus::TopKQueryResult& topk_query_result);
@@ -50,14 +59,6 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               const nlohmann::json& query_json,
               const nlohmann::json& config,
               milvus::MetricType metric_type = milvus::MetricType::IP);
-
-void
-testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
-                milvus::IndexType index_type,
-                const nlohmann::json& index_json,
-                const nlohmann::json& query_json,
-                milvus::MetricType metric_type = milvus::MetricType::IP,
-                const std::string& strategy = "default");
 
 void
 loadDataFromHdf5(const std::string& filename,

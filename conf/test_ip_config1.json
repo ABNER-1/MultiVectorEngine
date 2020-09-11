@@ -1,0 +1,29 @@
+{
+  "group_num": 3,
+  "base_data_locations": [
+    "/home/abner/vector/train64.txt",
+    "/home/abner/vector/train64-1.txt",
+    "/home/abner/vector/train72.txt"
+  ],
+  "test_data_locations": [
+    "/home/abner/vector/test64.txt",
+    "/home/abner/vector/test64-1.txt",
+    "/home/abner/vector/test72.txt"
+  ],
+  "dimensions": [
+    64,
+    64,
+    72
+  ],
+  "weights": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "nb": 10000,
+  "nq": 1000,
+  "topk": 50,
+  "dataset_lines": 10000,
+  "metric_type": "IP",
+  "result_location": "./ip_result1.txt"
+}
