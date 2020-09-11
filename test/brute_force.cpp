@@ -44,6 +44,7 @@ std::vector<float> weights = {
 
 json config;
 std::vector<std::string> base_data_locations;
+std::vector<std::string> query_data_locations;
 std::string query_data_location;
 std::vector<size_t> dimensions;
 std::vector<size_t> acc_dims;
@@ -54,8 +55,8 @@ size_t rows = 1000000;
 int nq = 10;
 size_t vec_groups = 4;
 int topk = 10;
+int precision = 6;
 bool use_base_query;
-
 
 template<typename MTYPE>
 using DISTFUNC = MTYPE(*)(const void *, const void *, const void *);
@@ -91,11 +92,11 @@ struct Compare {
     }
 };
 
-void Read(std::vector<milvus::multivector::RowEntity> &raw_data, std::ifstream &f, size_t thread_num) {
+void Read(std::vector<milvus::multivector::RowEntity> &raw_data, std::ifstream &f, size_t thread_num, size_t read_rows) {
 //    std::cout.precision(8);
-    f.precision(18);
+    f.precision(precision);
 #pragma omp parallel for
-    for (auto i = 0; i < rows; ++ i) {
+    for (auto i = 0; i < read_rows; ++ i) {
         raw_data[thread_num][i].float_data.resize(dimensions[thread_num]);
         for (auto j = 0; j < dimensions[thread_num]; ++ j) {
             f >> raw_data[thread_num][i].float_data[j];
@@ -110,7 +111,22 @@ void LoadRowData(std::vector<milvus::multivector::RowEntity> &raw_data) {
         fs[i].open(base_data_locations[i].c_str(), std::ios::in);
     }
     for (auto i = 0; i < vec_groups; ++ i)
-        readers[i] = std::thread(Read, std::ref(raw_data), std::ref(fs[i]), i);
+        readers[i] = std::thread(Read, std::ref(raw_data), std::ref(fs[i]), i, rows);
+    for (auto &th : readers)
+        th.join();
+    for (auto &f : fs) {
+        f.close();
+    }
+}
+
+void LoadQueryData(std::vector<milvus::multivector::RowEntity> &raw_data) {
+    std::vector<std::thread> readers(vec_groups);
+    std::vector<std::ifstream> fs(4);
+    for (auto i = 0; i < vec_groups; ++ i) {
+        fs[i].open(query_data_locations[i].c_str(), std::ios::in);
+    }
+    for (auto i = 0; i < vec_groups; ++ i)
+        readers[i] = std::thread(Read, std::ref(raw_data), std::ref(fs[i]), i, nq);
     for (auto &th : readers)
         th.join();
     for (auto &f : fs) {
@@ -121,7 +137,7 @@ void LoadRowData(std::vector<milvus::multivector::RowEntity> &raw_data) {
 void GenQueryDataFromBase(const std::vector<milvus::multivector::RowEntity> &base_data) {
     // default pick top nq base data to be query data
     std::ofstream fq(query_data_location, std::ios::out);
-    fq.precision(18);
+    fq.precision(precision);
     for (auto i = 0; i < nq; ++ i) {
         for (auto j = 0; j < vec_groups; ++ j) {
             for (auto k = 0; k < dimensions[j]; ++ k)
@@ -134,7 +150,7 @@ void GenQueryDataFromBase(const std::vector<milvus::multivector::RowEntity> &bas
 
 void GenQueryDataFromRandom() {
     std::ofstream fq(query_data_location, std::ios::out);
-    fq.precision(18);
+    fq.precision(precision);
     for (auto i = 0; i < nq; ++ i) {
         for (auto j = 0; j < vec_groups; ++ j) {
             for (auto k = 0; k < dimensions[j]; ++ k)
@@ -148,8 +164,8 @@ void GenQueryDataFromRandom() {
 void LoadQuery(std::vector<milvus::multivector::RowEntity> &query) {
     std::ifstream fq(query_data_location, std::ios::in);
 
-    fq.precision(18);
-    std::cout.precision(18);
+    fq.precision(precision);
+    std::cout.precision(precision);
     std::cout << "check load query data:" << std::endl;
     for (auto i = 0; i < nq; ++ i) {
         for (auto j = 0; j < vec_groups; ++ j) {
@@ -208,6 +224,7 @@ bool get_config() {
         rows = config["nb"];
         nq = config["nq"];
         topk = config["topk"];
+        precision = config["precision"];
         if (config["metric_type"] == "IP") {
             distfunc = InnerProduct;
             std::cout << "metric_type = " << config["metric_type"] << std::endl;
@@ -217,7 +234,7 @@ bool get_config() {
         } else {
             std::cout << "invalid metric_type from config file: " << config["metric_type"] << std::endl;
         }
-        query_data_location = config.at("query_data_location");
+//        query_data_location = config.at("query_data_locations");
         use_base_query = config.at("use_base_query");
         base_data_locations.clear();
         dimensions.clear();
@@ -225,6 +242,7 @@ bool get_config() {
         weights.clear();
         for (auto i = 0; i < vec_groups; ++ i) {
             base_data_locations.emplace_back(config.at("base_data_locations")[i]);
+            query_data_locations.emplace_back(config.at("query_data_locations")[i]);
             dimensions.emplace_back(config.at("dimensions")[i]);
             acc_dims[i] = i ? acc_dims[i - 1] + dimensions[i - 1] : 0;
             weights.emplace_back(config.at("weights")[i]);
@@ -252,7 +270,7 @@ void show_config() {
     for (auto &d : acc_dims)
         std::cout << d << " ";
     std::cout << std::endl;
-    std::cout << "nb = " << rows << ", nq = " << nq << ", topk = " << topk << std::endl;
+    std::cout << "nb = " << rows << ", nq = " << nq << ", topk = " << topk << ", precision = " << precision << std::endl;
 }
 
 void show_result(const milvus::TopKQueryResult &res) {
@@ -296,15 +314,15 @@ int main(int argc, char **argv) {
     te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "LoadRowData costs " << search_duration << " ms." << std::endl;
-    use_base_query ? GenQueryDataFromBase(raw_data) : GenQueryDataFromRandom();
-    milvus::TopKQueryResult result;
-
     std::vector<milvus::multivector::RowEntity> query_data(vec_groups, milvus::multivector::RowEntity(nq, milvus::Entity()));
     ts = std::chrono::high_resolution_clock::now();
-    LoadQuery(query_data);
+    use_base_query ? GenQueryDataFromBase(raw_data) : LoadQueryData(query_data);
+//    LoadQuery(query_data);
     te = std::chrono::high_resolution_clock::now();
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "LoadQuery costs " << search_duration << " ms." << std::endl;
+    milvus::TopKQueryResult result;
+
     result.resize(nq);
     ts = std::chrono::high_resolution_clock::now();
     DoSearch(raw_data, query_data, result);

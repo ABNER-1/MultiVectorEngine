@@ -85,6 +85,11 @@ MultiVectorCollectionIPNra::DropIndex() {
 }
 
 Status
+MultiVectorCollectionIPNra::Flush() {
+    return conn_ptr_->Flush(child_collection_names_);
+}
+
+Status
 MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
                                        const std::vector<milvus::Entity> &entity_query,
                                        int64_t topk,

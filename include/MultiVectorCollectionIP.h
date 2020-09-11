@@ -34,6 +34,9 @@ class MultiVectorCollectionIP : public MultiVectorCollection {
     DropIndex() override;
 
     Status
+    Flush() override;
+
+    Status
     Search(const std::vector<float>& weight,
            const std::vector<std::vector<milvus::Entity>>& entity_array,
            int64_t topk, const std::string& extra_params,
