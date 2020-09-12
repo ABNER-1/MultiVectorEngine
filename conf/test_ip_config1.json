@@ -5,7 +5,7 @@
     "/home/abner/vector/train64-1.txt",
     "/home/abner/vector/train72.txt"
   ],
-  "test_data_locations": [
+  "query_data_locations": [
     "/home/abner/vector/test64.txt",
     "/home/abner/vector/test64-1.txt",
     "/home/abner/vector/test72.txt"
@@ -23,7 +23,7 @@
   "nb": 10000,
   "nq": 1000,
   "topk": 50,
-  "dataset_lines": 10000,
+  "dataset_lines": 1183514,
   "metric_type": "IP",
-  "result_location": "./ip_result1.txt"
+  "result_location": "./ip1/ip_result1.txt"
 }

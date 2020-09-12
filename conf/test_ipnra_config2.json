@@ -22,7 +22,7 @@
   "nb": 238459,
   "precision": 18,
   "metric_type": "IP",
-  "result_prefix": "./ip/ip_result",
+  "result_prefix": "./ipnra/ip_result",
   "baseline_result": "./baseline.txt",
   "use_base_query": false
 }

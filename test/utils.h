@@ -40,6 +40,11 @@ readArraysFromSplitedData(const std::vector<std::string>& file_names,
                           int page_num = 10000, int page = 0, int lines=10000);
 
 void
+writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
+                     const std::string& result_file,
+                     float total_time);
+
+void
 showResult(const milvus::TopKQueryResult& topk_query_result);
 
 void

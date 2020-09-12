@@ -121,6 +121,23 @@ generateIds(int nq, std::vector<int64_t>& id_arrays, int base_id) {
 }
 
 void
+writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
+                     const std::string& result_file,
+                     float total_time) {
+    std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
+    std::ofstream out(result_file);
+    out.precision(18);
+    out << topk_query_result.size() << " " << topk_query_result[0].ids.size()
+        << " " << total_time << std::endl;
+    for (auto& result : topk_query_result) {
+        for (int i = 0; i < result.ids.size(); ++i) {
+            out << result.ids[i] << " " << result.distances[i] << std::endl;
+        }
+    }
+    out.close();
+}
+
+void
 showResult(const milvus::TopKQueryResult& topk_query_result) {
     std::cout.precision(18);
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;

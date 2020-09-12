@@ -1,25 +1,9 @@
 #include "MultiVectorEngine.h"
 #include <iostream>
+#include <chrono>
 #include "utils.h"
 
 using namespace milvus::multivector;
-
-void
-writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
-                     const std::string& result_file,
-                     float total_time) {
-    std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
-    std::ofstream out(result_file);
-    out.precision(18);
-    out << topk_query_result.size() << " " << topk_query_result[0].ids.size()
-        << " " << total_time << std::endl;
-    for (auto& result : topk_query_result) {
-        for (int i = 0; i < result.ids.size(); ++i) {
-            out << result.ids[i] << " " << result.distances[i] << std::endl;
-        }
-    }
-    out.close();
-}
 
 void
 testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
@@ -38,8 +22,8 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
     std::vector<std::string> file_names, test_file_names;
 
-    int all_lines = config.at("dataset_lines");
-    auto collection_name = "test_collection";
+    int all_lines = config.at("nb");
+    auto collection_name = "test_collection1";
     std::vector<int64_t> dim, index_file_sizes;
     int nq = config.at("nq");
     int topk = config.at("topk");
@@ -47,7 +31,7 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     std::vector<float> weight;
     for (auto i = 0; i < vec_group_num; ++i) {
         file_names.emplace_back(config.at("base_data_locations")[i]);
-        test_file_names.emplace_back(config.at("test_data_locations")[i]);
+        test_file_names.emplace_back(config.at("query_data_locations")[i]);
         dim.emplace_back(config.at("dimensions")[i]);
         weight.emplace_back(config.at("weights")[i]);
         index_file_sizes.push_back(1024);
@@ -55,7 +39,7 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     assert_status(engine->CreateCollection(collection_name, metric, dim, index_file_sizes));
 
     // generate insert data vector
-    int vector_size = config.at("nb");
+    int vector_size = config.at("batch");
     int page_id = 0;
     std::vector<RowEntity> query_entities;
     std::vector<std::vector<int64_t>> all_id_arrays;
@@ -81,20 +65,24 @@ testIndexTypeIP(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         all_id_arrays.emplace_back(std::move(id_arrays));
         ++page_id;
     }
-
+    engine->Flush(collection_name);
     assert_status(engine->CreateIndex(collection_name,
                                       index_type, index_json.dump()));
 
     readArraysFromSplitedData(test_file_names, dim, query_entities, nq, 0, nq);
     milvus::TopKQueryResult topk_result;
+    auto ts = std::chrono::high_resolution_clock::now();
     assert_status(engine->Search(collection_name, weight,
                                  query_entities, topk, query_json.dump(), topk_result));
-    writeBenchmarkResult(topk_result, result_file_name, 0);
+    auto te = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    writeBenchmarkResult(topk_result, result_file_name, search_duration);
 
     assert_status(engine->DropIndex(collection_name));
     for (auto& id_arrays: all_id_arrays) {
         assert_status(engine->Delete(collection_name, id_arrays));
     }
+    engine->Flush(collection_name);
 
     assert_status(engine->DropCollection(collection_name));
     resetIds();
@@ -114,7 +102,7 @@ main(int argc, char** argv) {
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
     std::string result_prefix = config.at("result_prefix");
     std::vector<int> nlists = {128, 256, 512, 1024, 2048};
-    std::vector<int> nprobes = {10, 20, 50, 100, 128};
+    std::vector<int> nprobes = {1, 4, 5, 10, 20, 50, 80, 128};
     int number = 0;
     for (auto nlist : nlists) {
         for (auto nprobe : nprobes) {

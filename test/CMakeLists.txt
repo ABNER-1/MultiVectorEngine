@@ -55,7 +55,7 @@ target_link_libraries(test_nra3
         milvus_sdk
         pthread)
 
-add_executable(brute_force brute_force.cpp)
+add_executable(brute_force brute_force.cpp utils.cpp)
 
 target_link_libraries(brute_force
         multi_vector
