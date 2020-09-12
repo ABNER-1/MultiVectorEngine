@@ -8,39 +8,11 @@
 #include <BaseEngine.h>
 #include "nlohmann/json.hpp"
 #include <omp.h>
+#include "utils.h"
 
 using json = nlohmann::json;
 
 constexpr double eps = 1e-4;
-/*
-std::vector<std::string> data_locations = {
-    "/home/zilliz/workspace/data/data1.dat",
-    "/home/zilliz/workspace/data/data2.dat",
-    "/home/zilliz/workspace/data/data3.dat",
-    "/home/zilliz/workspace/data/data4.dat"
-};
-
-std::vector<size_t> dimensions = {
-    64,
-    128,
-    256,
-    512
-};
-
-std::vector<size_t> acc_dims = {
-    0,
-    64,
-    192,
-    448,
-};
-
-std::vector<float> weights = {
-    0.1,
-    0.2,
-    0.3,
-    0.4
-};
-*/
 
 json config;
 std::vector<std::string> base_data_locations;
@@ -330,7 +302,9 @@ int main(int argc, char **argv) {
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Search costs " << search_duration << " ms." << std::endl;
 
-    show_result(result);
+//    show_result(result);
+    std::string baseline_file = config.at("baseline_result");
+    writeBenchmarkResult(result, baseline_file, search_duration);
 
 //    while (scanf("%d", &nq) != EOF) {
 //        if (nq <= 0) continue;

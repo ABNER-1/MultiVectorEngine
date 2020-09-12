@@ -1,9 +1,7 @@
-nq
-topk time
+nq topk time
 id1 distance1
 id2 distance2
 id3 distance3
-topk2 time
 id1 distance1
 id2 distance2
 id3 distance3
