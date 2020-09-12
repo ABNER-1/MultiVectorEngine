@@ -129,13 +129,17 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
         tpk = topk;
-        threshold = 2048;
+        threshold = 16384;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params, topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
+//        if (succ_flag)
+//            std::cout << "the " << q + 1 << "th query recall succ! tpk = " << tpk << std::endl;
+//        else
+//            std::cout << "the " << q + 1 << "th query recall failed! tpk = " << tpk << std::endl;
     }
 
     return Status::OK();

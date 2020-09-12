@@ -167,7 +167,7 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
         cur_min_estimate_value += ((*p_dists[i]) * weight[i]);
-        max_ubs[i] = p_dists[i][topk - 1] * weight[i] + 1;
+        max_ubs[i] = p_dists[i][topk - 1] * weight[i] + weight[i];// + 1;
         max_ubs[num_group] += max_ubs[i];
         auto cur_id = *p_ids[i];
         auto target = hash_tbl.find(cur_id);
@@ -262,16 +262,25 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         }
     }
 
-    auto tot_size = result_set.size();
-    result.ids.resize(tot_size);
-    result.distances.resize(tot_size);
+    auto cmp2 = [&](size_t i, size_t j) { return nodes[i].ub > nodes[j].ub; };
+    std::priority_queue<size_t, std::vector<size_t>, decltype(cmp2)> final_result(cmp2);
     while (!result_set.empty()) {
-        tot_size--;
-//        std::cout << "topid = " << nodes[result_set.top()].id << ", topdis = " << nodes[result_set.top()].lb << std::endl;
-        result.ids[tot_size] = nodes[result_set.top()].id;
-        result.distances[tot_size] = nodes[result_set.top()].lb;
+        final_result.emplace(result_set.top());
         result_set.pop();
     }
+    auto tot_size = final_result.size();
+    result.ids.resize(tot_size);
+    result.distances.resize(tot_size);
+    tot_size = 0;
+    while (!final_result.empty()) {
+//        std::cout << "topid = " << nodes[result_set.top()].id << ", topdis = " << nodes[result_set.top()].lb << std::endl;
+        result.ids[tot_size] = nodes[final_result.top()].id;
+        result.distances[tot_size] = nodes[final_result.top()].ub;
+//        std::cout << "(" << nodes[final_result.top()].id << ":<" << nodes[final_result.top()].lb << "," << nodes[final_result.top()].ub << ">)";
+        final_result.pop();
+        tot_size ++;
+    }
+    std::cout << std::endl;
 
     return ret;
 }

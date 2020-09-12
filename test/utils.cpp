@@ -456,6 +456,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
 // generate insert data vector
     std::vector<RowEntity> query_entities(nq, RowEntity(vec_group_num, milvus::Entity()));
+//    std::vector<RowEntity> query_entities(1, RowEntity(vec_group_num, milvus::Entity()));
     std::vector<std::vector<int64_t>> all_id_arrays;
     // generate query vector
 //    query_entities.resize(nq);
@@ -511,6 +512,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         fin.precision(precision);
         for (auto j = 0; j < nq; ++j) {
             query_entities[j][i].float_data.resize(dim[i]);
+//            query_entities[0][i].float_data.resize(dim[i]);
             for (auto k = 0; k < dim[i]; ++k) {
                 fin >> query_entities[j][i].float_data[k];
             }
