@@ -280,7 +280,7 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         final_result.pop();
         tot_size ++;
     }
-    std::cout << std::endl;
+//    std::cout << std::endl;
 
     return ret;
 }

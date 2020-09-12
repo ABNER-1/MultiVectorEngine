@@ -176,7 +176,7 @@ void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
               const nlohmann::json& index_json,
-              const nlohmann::json& query_json,
+              nlohmann::json& query_json,
               milvus::MetricType metric_type) {
     using namespace milvus::multivector;
     auto assert_status = [](milvus::Status status) {
@@ -222,7 +222,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
     milvus::TopKQueryResult topk_result;
     assert_status(engine->Search(collection_name, weight,
-                                 query_entities, topk, query_json.dump(), topk_result));
+                                 query_entities, topk, query_json, topk_result));
     showResult(topk_result);
 
     assert_status(engine->DropIndex(collection_name));
@@ -380,7 +380,7 @@ void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
               const nlohmann::json& index_json,
-              const nlohmann::json& query_json,
+              nlohmann::json& query_json,
               const nlohmann::json& config,
               milvus::MetricType metric_type) {
     using namespace milvus::multivector;
@@ -505,7 +505,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
     milvus::TopKQueryResult topk_result;
     ts = std::chrono::high_resolution_clock::now();
-    assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json.dump(), topk_result));
+    assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json, topk_result));
     te = std::chrono::high_resolution_clock::now();
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Search costs " << search_duration << " ms." << std::endl;
@@ -513,4 +513,76 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 
     assert_status(engine->DropIndex(collection_name));
     assert_status(engine->DropCollection(collection_name));
+}
+
+void
+testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
+              milvus::IndexType index_type,
+              const nlohmann::json& index_json,
+              nlohmann::json& query_json,
+              const nlohmann::json& config,
+              milvus::MetricType metric_type,
+              const std::string &collection_name) {
+    using namespace milvus::multivector;
+    auto assert_status = [](milvus::Status status) {
+        if (!status.ok()) {
+            std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
+        }
+    };
+
+    int vec_group_num = config.at("group_num");
+    int nq = config.at("nq");
+    int topk = config.at("topk");
+    int max_dim = 0;
+    int precision = config.at("precision");
+    std::chrono::high_resolution_clock::time_point ts, te;
+    std::vector<int64_t> dim;
+    std::vector<int64_t> index_file_sizes;
+    std::vector<std::string> query_data_locations;
+    std::vector<float> weights;
+    std::vector<int64_t> acc_dims(vec_group_num, 0);
+    dim.clear();
+    index_file_sizes.clear();
+    query_data_locations.clear();
+    weights.clear();
+    for (auto i = 0; i < vec_group_num; ++i) {
+        query_data_locations.emplace_back(config.at("query_data_locations")[i]);
+        dim.emplace_back(config.at("dimensions")[i]);
+        if(max_dim < config.at("dimensions")[i])
+            max_dim = config.at("dimensions")[i];
+        acc_dims[i] = i ? acc_dims[i - 1] + dim[i - 1] : 0;
+        weights.emplace_back(config.at("weights")[i]);
+        index_file_sizes.push_back(2048);
+    }
+
+    std::vector<RowEntity> query_entities(nq, RowEntity(vec_group_num, milvus::Entity()));
+
+    for (auto i = 0; i < vec_group_num; ++i) {
+        std::ifstream fin(query_data_locations[i], std::ios::in);
+        fin.precision(precision);
+        for (auto j = 0; j < nq; ++j) {
+            query_entities[j][i].float_data.resize(dim[i]);
+            for (auto k = 0; k < dim[i]; ++k) {
+                fin >> query_entities[j][i].float_data[k];
+            }
+        }
+        fin.close();
+    }
+
+    assert_status(engine->DropIndex(collection_name));
+    ts = std::chrono::high_resolution_clock::now();
+    assert_status(engine->CreateIndex(collection_name, index_type, index_json.dump()));
+    te = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "CreateIndex costs " << search_duration << " ms." << std::endl;
+
+    milvus::TopKQueryResult topk_result;
+    ts = std::chrono::high_resolution_clock::now();
+    assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json, topk_result));
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "Search costs " << search_duration << " ms." << std::endl;
+    showResultL2(topk_result);
+
+    assert_status(engine->DropIndex(collection_name));
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MilvusApi.h"
+#include "nlohmann/json.hpp"
 
 namespace milvus {
 namespace multivector {
@@ -44,7 +45,7 @@ class BaseEngine {
     virtual Status
     Search(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
-           int64_t topk, const std::string& extra_params,
+           int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) = 0;
 
  protected:

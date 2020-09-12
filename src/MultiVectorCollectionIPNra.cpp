@@ -116,7 +116,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
 Status
 MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
                                    const std::vector<RowEntity> &entity_array,
-                                   int64_t topk, const std::string &extra_params,
+                                   int64_t topk, nlohmann::json &extra_params,
                                    milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
     for (auto q = 0; q < entity_array.size(); ++q) {
@@ -126,7 +126,11 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
-            auto stat = SearchImpl(weight, entity_array[q], topk, extra_params, topk_query_results[q], tpk);
+            if (extra_params.contains("ef")) {
+                if (extra_params["ef"] < tpk)
+                    extra_params["ef"] = tpk;
+            }
+            auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
     }
