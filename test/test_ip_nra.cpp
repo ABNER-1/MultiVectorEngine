@@ -74,6 +74,13 @@ testIndexTypeIPNra(std::shared_ptr<milvus::multivector::MultiVectorEngine> engin
     auto ts = std::chrono::high_resolution_clock::now();
     assert_status(engine->Search(collection_name, weight,
                                  query_entities, topk, query_json, topk_result));
+//    int cnt = 0;
+//    for (auto &res : topk_result) {
+//        std::cout << "the " << ++ cnt << "th query:" << std::endl;
+//        for (auto i = 0; i < res.ids.size(); ++ i) {
+//            std::cout << "id = " << res.ids[i] << ", dis = " << res.distances[i] << std::endl;
+//        }
+//    }
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     writeBenchmarkResult(topk_result, result_file_name, search_duration);
