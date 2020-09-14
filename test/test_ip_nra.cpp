@@ -101,8 +101,10 @@ main(int argc, char** argv) {
     std::string port = "19530";
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
     std::string result_prefix = config.at("result_prefix");
-    std::vector<int> nlists = {128, 256, 512, 1024, 2048};
-    std::vector<int> nprobes = {1, 4, 5, 10, 20, 50, 100, 128};
+//    std::vector<int> nlists = {128, 256, 512, 1024, 2048};
+//    std::vector<int> nprobes = {1, 4, 5, 10, 20, 50, 100, 128};
+    std::vector<int> nlists = {2048};
+    std::vector<int> nprobes = {4};
     int number = 0;
     for (auto nlist : nlists) {
         for (auto nprobe : nprobes) {
