@@ -105,9 +105,9 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     QueryResult &query_results,
                                     int64_t tpk) {
 
-//    std::vector<TopKQueryResult> tqrs(child_collection_names_.size(), TopKQueryResult(1, QueryResult()));
-    std::vector<TopKQueryResult> tqrs;
-    tqrs.resize(child_collection_names_.size());
+    std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
+//    std::vector<TopKQueryResult> tqrs;
+//    tqrs.resize(child_collection_names_.size());
     std::vector<std::string> partition_tags;
     for (auto i = 0; i < child_collection_names_.size(); ++ i) {
         std::vector<milvus::Entity> container;
@@ -116,6 +116,16 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         if (!status.ok())
             return status;
         std::vector<milvus::Entity>().swap(container);
+    }
+    auto mx_size = tqrs[0][0].ids.size();
+    for (auto i = 1; i < child_collection_names_.size(); ++ i) {
+        mx_size = mx_size < tqrs[i][0].ids.size() ? tqrs[i][0].ids.size() : mx_size;
+    }
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        if (tqrs[i][0].ids.size() < mx_size) {
+            tqrs[i][0].ids.resize(mx_size, -1);
+            tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
+        }
     }
     Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     return stat;
