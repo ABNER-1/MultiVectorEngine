@@ -411,6 +411,14 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         result.distances[tot_size] = nodes[result_set.top()].lb;
         result_set.pop();
     }
+//    std::cout << "NoRandomAccessAlgorithmIP result:" << std::endl;
+//    for (auto i = 0; i < result.ids.size(); ++ i) {
+//        std::cout << "id = " << result.ids[i] << ", dis = " << result.distances[i] << std::endl;
+//    }
+//    if (ret)
+//        std::cout << "succ!" << std::endl;
+//    else
+//        std::cout << "fail!" << std::endl;
 
     return ret;
 }

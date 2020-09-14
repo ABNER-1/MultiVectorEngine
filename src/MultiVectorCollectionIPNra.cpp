@@ -130,6 +130,8 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
                 if (extra_params["ef"] < tpk)
                     extra_params["ef"] = tpk;
             }
+            topk_query_results[q].ids.clear();
+            topk_query_results[q].distances.clear();
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
