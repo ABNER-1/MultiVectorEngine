@@ -80,7 +80,7 @@ MultiVectorCollectionIP::Flush() {
 Status
 MultiVectorCollectionIP::Search(const std::vector<float>& weight,
                                 const std::vector<RowEntity>& entity_array,
-                                int64_t topk, const std::string& extra_params,
+                                int64_t topk, nlohmann::json& extra_params,
                                 milvus::TopKQueryResult& topk_query_results) {
     std::vector<milvus::Entity> new_arrays(entity_array.size());
     std::vector<int> zero_idx;
@@ -92,7 +92,7 @@ MultiVectorCollectionIP::Search(const std::vector<float>& weight,
     if (!status.ok()) {
         std::cout << "[ERROR] boost entities by weight error: " << status.message() << std::endl;
     }
-    this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, extra_params, topk_query_results);
+    this->conn_ptr_->Search(this->collection_name_, {}, new_arrays, topk, extra_params.dump(), topk_query_results);
 
     return Status::OK();
 }

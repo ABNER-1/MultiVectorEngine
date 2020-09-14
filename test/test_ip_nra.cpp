@@ -9,7 +9,7 @@ void
 testIndexTypeIPNra(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
                    milvus::IndexType index_type,
                    const nlohmann::json& index_json,
-                   const nlohmann::json& query_json,
+                   nlohmann::json& query_json,
                    const nlohmann::json& config,
                    const std::string& result_file_name) {
     using namespace milvus::multivector;
@@ -73,7 +73,7 @@ testIndexTypeIPNra(std::shared_ptr<milvus::multivector::MultiVectorEngine> engin
     milvus::TopKQueryResult topk_result;
     auto ts = std::chrono::high_resolution_clock::now();
     assert_status(engine->Search(collection_name, weight,
-                                 query_entities, topk, query_json.dump(), topk_result));
+                                 query_entities, topk, query_json, topk_result));
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     writeBenchmarkResult(topk_result, result_file_name, search_duration);
@@ -110,8 +110,9 @@ main(int argc, char** argv) {
         for (auto nprobe : nprobes) {
             std::cout<<" nlist: "<<nlist<<" ; nprobe: "<< nprobe<<std::endl;
             auto result_file_name = result_prefix + std::to_string(++number) + ".txt";
+            nlohmann::json search_args = {{"nprobe", nprobe}};
             testIndexTypeIPNra(engine, milvus::IndexType::IVFFLAT,
-                               {{"nlist", nlist}}, {{"nprobe", nprobe}},
+                               {{"nlist", nlist}}, search_args,
                                config, result_file_name);
         }
     }

@@ -39,7 +39,7 @@ class MultiVectorCollectionIP : public MultiVectorCollection {
     Status
     Search(const std::vector<float>& weight,
            const std::vector<std::vector<milvus::Entity>>& entity_array,
-           int64_t topk, const std::string& extra_params,
+           int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
  private:
     inline Status

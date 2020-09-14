@@ -3,6 +3,7 @@
 #include <MultiVectorEngine.h>
 #include <MultiVectorCollection.h>
 #include <MultiVectorEngine.h>
+#include <nlohmann/json.hpp>
 #include "MultiVectorCollectionIP.h"
 #include "MultiVectorCollectionL2.h"
 #include "MultiVectorCollectionIPNra.h"
@@ -68,7 +69,7 @@ Status
 MultiVectorEngine::Search(const std::string& collection_name,
                           const std::vector<float>& weight,
                           const std::vector<RowEntity>& entity_array,
-                          int64_t topk, const std::string& extra_params,
+                          int64_t topk, nlohmann::json& extra_params,
                           milvus::TopKQueryResult& topk_query_results) {
     return getOrFetchCollectionPtr(collection_name)->Search(weight, entity_array, topk,
                                                             extra_params, topk_query_results);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 #include "MilvusApi.h"
 #include "Status.h"
 #include "BaseEngine.h"
@@ -50,7 +51,7 @@ class MultiVectorEngine : public BaseEngine {
     Status
     Search(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
-           int64_t topk, const std::string& extra_params,
+           int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
 
  private:
