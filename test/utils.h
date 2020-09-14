@@ -23,6 +23,9 @@ resetIds();
 void
 generateIds(int nq, std::vector<int64_t>& id_arrays);
 
+void
+generateIds(int nq, std::vector<int64_t>& id_arrays, int base_id);
+
 int
 readArrays(const std::string& file_name, const std::vector<int64_t>& dimensions,
            std::vector<milvus::multivector::RowEntity>& row_entities,
@@ -54,16 +57,25 @@ void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
               const nlohmann::json& index_json,
-              const nlohmann::json& query_json,
+              nlohmann::json& query_json,
               milvus::MetricType metric_type = milvus::MetricType::IP);
 
 void
 testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               milvus::IndexType index_type,
               const nlohmann::json& index_json,
-              const nlohmann::json& query_json,
+              nlohmann::json& query_json,
               const nlohmann::json& config,
               milvus::MetricType metric_type = milvus::MetricType::IP);
+
+void
+testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
+              milvus::IndexType index_type,
+              const nlohmann::json& index_json,
+              nlohmann::json& query_json,
+              const nlohmann::json& config,
+              milvus::MetricType metric_type = milvus::MetricType::IP,
+              const std::string &collection_name = "");
 
 void
 loadDataFromHdf5(const std::string& filename,
