@@ -240,6 +240,8 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         }
         for (auto i = 0; i < nodes.size(); ++i) {
             if (result_set.size() < TopK || nodes[i].ub < nodes[result_set.top()].ub) {
+                if (nodes[i].id < 0)
+                    continue;
                 nodes[i].result_flag = true;
                 result_set.emplace(i);
                 if (result_set.size() > TopK) {
@@ -319,6 +321,14 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         nodes[pos].group_flags[i] = true;
         ++nodes[pos].occurs_time;
     }
+//    for (auto i = 0; i < num_group; ++ i) {
+//        for (auto j = 0; j < topk; ++ j) {
+//            if (ng_nq_tpk[i][0].ids[j] < 0 || ng_nq_tpk[i][0].ids[j] > 240000 ||  ng_nq_tpk[i][0].distances[j] > 1.0f || ng_nq_tpk[i][0].distances[j] < 0) {
+//                std::cout << "what's the fuck guy?" << std::endl;
+//                std::cout << "fuck j = " << j + 1 << "fuck id = " << p_ids[i][j] << ", fuck dis = " << p_dists[i][j] << std::endl;
+//            }
+//        }
+//    }
     for (auto i = 0; i < nodes.size(); ++i) {
         // todo: ???
         nodes[i].ub = cur_max_estimate_value;
@@ -350,7 +360,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                 hash_tbl[cur_id] = pos;
             }
             // maintain TopK results
-            if (!nodes[pos].result_flag && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
+            if (!nodes[pos].result_flag && nodes[pos].id > 0 && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
                 nodes[pos].result_flag = true;
                 result_set.push(pos);
                 if (result_set.size() > TopK) {

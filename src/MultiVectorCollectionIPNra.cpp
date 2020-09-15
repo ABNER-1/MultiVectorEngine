@@ -105,6 +105,36 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
         if (!status.ok())
             return status;
         std::vector<milvus::Entity>().swap(container);
+//        for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
+//            if (tqrs[i][0].ids[j] < 0 || tqrs[i][0].ids[j] > 240000 || tqrs[i][0].distances[j] > 1.0f || tqrs[i][0].distances[j] < -1.0f) {
+//                std::cout << "what's the fuck guy?" << std::endl;
+//                std::cout << "fuck j = " << j + 1 << ", fuck id = " << tqrs[i][0].ids[j] << ", fuck dis = " << tqrs[i][0].distances[j] << std::endl;
+//            }
+//        }
+    }
+//    std::cout << "size of tqrs: " << std::endl;
+//    for (auto i = 0; i < tqrs.size(); ++ i) {
+//        for (auto j = 0; j < tqrs[i].size(); ++ j) {
+//            std::cout << "(" << i << ", " << j << ", " << tqrs[i][j].ids.size() << ")" << std::endl;
+//        }
+//    }
+//    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+//        for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
+//            if (tqrs[i][0].ids[j] < 0 || tqrs[i][0].ids[j] > 240000 || tqrs[i][0].distances[j] > 1.0f || tqrs[i][0].distances[j] < -1.0f) {
+//                std::cout << "what's the fuck guy?" << std::endl;
+//                std::cout << "fuck j = " << j + 1 << ", fuck id = " << tqrs[i][0].ids[j] << ", fuck dis = " << tqrs[i][0].distances[j] << std::endl;
+//            }
+//        }
+//    }
+    auto mx_size = tqrs[0][0].ids.size();
+    for (auto i = 1; i < child_collection_names_.size(); ++ i) {
+        mx_size = mx_size < tqrs[i][0].ids.size() ? tqrs[i][0].ids.size() : mx_size;
+    }
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        if (tqrs[i][0].ids.size() < mx_size) {
+            tqrs[i][0].ids.resize(mx_size, -1);
+            tqrs[i][0].distances.resize(mx_size, 0);
+        }
     }
     Status stat =
         NoRandomAccessAlgorithmIP(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError,
@@ -136,6 +166,14 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
         topks.push_back(tpk);
+//        bool check = true;
+//        for (auto i = 0; i < topk_query_results[q].ids.size(); ++ i) {
+//            if (topk_query_results[q].ids[i] < 0 || topk_query_results[q].ids[i] > 240000 || topk_query_results[q].distances[i] > 1.0f || topk_query_results[q].distances[i] < 0) {
+//                std::cout << "when q = " << q + 1 << ", invalid result:" << std::endl;
+//                std::cout << "i = " << i << ", id = " << topk_query_results[q].ids[i] << ", dis = " << topk_query_results[q].distances[i] << std::endl;
+//                check = false;
+//            }
+//        }
     }
 
     return Status::OK();
