@@ -149,23 +149,23 @@ main(int argc, char** argv) {
         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
 
     int number = 0;
-//    for (auto nlist : nlists) {
-//        CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
-//        for (auto nprobe : nprobes) {
-//            std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
-//            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
-//            nlohmann::json search_params = {{"nprobe", nprobe}};
-//            Search(engine, search_params, result_file_name);
-//            auto topks = engine->GetActualTopk(collection_name);
-//            writeTopk(topks);
-//        }
-//        DropIndex(engine);
-//    }
+    for (auto nlist : nlists) {
+        CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
+        for (auto nprobe : nprobes) {
+            std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
+            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
+            nlohmann::json search_params = {{"nprobe", nprobe}};
+            Search(engine, search_params, result_file_name);
+            auto topks = engine->GetActualTopk(collection_name);
+            writeTopk(topks);
+        }
+        DropIndex(engine);
+    }
 
-//    std::vector<int> ms = {4, 16, 48};
-    std::vector<int> ms = {4, 8, 16, 48};
-    std::vector<int> efcs = {8, 9, 12, 16, 32, 100, 512};
-//    std::vector<int> efcs = {8, 16, 100, 512};
+//    std::vector<int> ms = {4, 8, 16, 48};
+//    std::vector<int> efcs = {8, 9, 12, 16, 32, 100, 512};
+    std::vector<int> ms = {4, 8};
+    std::vector<int> efcs = {8, 9, 10, 16, 32};
     std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 4096};
     number = 0;
     for (auto m : ms) {

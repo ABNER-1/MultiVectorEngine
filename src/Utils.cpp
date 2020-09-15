@@ -299,6 +299,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
     std::vector<const float *> p_dists(num_group, 0);
     std::vector<NRANode> nodes;
     std::unordered_map<int64_t, size_t> hash_tbl;
+
     float cur_max_estimate_value = 0.0;
     auto cmp = [&](size_t i, size_t j) { return nodes[i].lb > nodes[j].lb; };
     std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
@@ -321,16 +322,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         nodes[pos].group_flags[i] = true;
         ++nodes[pos].occurs_time;
     }
-//    for (auto i = 0; i < num_group; ++ i) {
-//        for (auto j = 0; j < topk; ++ j) {
-//            if (ng_nq_tpk[i][0].ids[j] < 0 || ng_nq_tpk[i][0].ids[j] > 240000 ||  ng_nq_tpk[i][0].distances[j] > 1.0f || ng_nq_tpk[i][0].distances[j] < 0) {
-//                std::cout << "what's the fuck guy?" << std::endl;
-//                std::cout << "fuck j = " << j + 1 << "fuck id = " << p_ids[i][j] << ", fuck dis = " << p_dists[i][j] << std::endl;
-//            }
-//        }
-//    }
     for (auto i = 0; i < nodes.size(); ++i) {
-        // todo: ???
         nodes[i].ub = cur_max_estimate_value;
         result_set.emplace(i);
         nodes[i].result_flag = true;
@@ -415,20 +407,10 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
     result.distances.resize(tot_size);
     while (!result_set.empty()) {
         --tot_size;
-//        std::cout << "topid = " << nodes[result_set.top()].id << ", topdis = " << nodes[result_set.top()].lb << std::endl;
         result.ids[tot_size] = nodes[result_set.top()].id;
         result.distances[tot_size] = nodes[result_set.top()].lb;
         result_set.pop();
     }
-//    std::cout << "NoRandomAccessAlgorithmIP result:" << std::endl;
-//    for (auto i = 0; i < result.ids.size(); ++ i) {
-//        std::cout << "id = " << result.ids[i] << ", dis = " << result.distances[i] << std::endl;
-//    }
-//    if (ret)
-//        std::cout << "succ!" << std::endl;
-//    else
-//        std::cout << "fail!" << std::endl;
-
     return ret;
 }
 
