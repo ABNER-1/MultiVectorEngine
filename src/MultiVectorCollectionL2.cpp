@@ -1,5 +1,6 @@
 #include <nlohmann/json.hpp>
 #include "Utils.h"
+#include <omp.h>
 #include "MultiVectorCollectionL2.h"
 
 
@@ -138,6 +139,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
+    #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
         tpk = topk;
