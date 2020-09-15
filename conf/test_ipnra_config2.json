@@ -23,7 +23,7 @@
   "precision": 18,
   "metric_type": "IP",
   "strategy": "nra",
-  "ivf_result_prefix": "./ipnra/ivf/ip_result",
+  "ivf_result_prefix": "./ipnra/ivf2/ip_result",
   "hnsw_result_prefix": "./ipnra/hnsw/ip_result",
   "baseline_result": "./baseline.txt",
   "use_base_query": false

@@ -90,8 +90,16 @@ Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
     using namespace milvus::multivector;
     milvus::TopKQueryResult topk_result;
     auto ts = std::chrono::high_resolution_clock::now();
-    assert_status(engine->Search(collection_name, weight,
-                                 query_entities, topk, query_json, topk_result));
+    for (auto & query_entity : query_entities){
+        std::vector<RowEntity> tmp_query_entities;
+        milvus::TopKQueryResult tmp_topk_result;
+        tmp_query_entities.emplace_back(query_entity);
+        assert_status(engine->Search(collection_name, weight,
+                                     tmp_query_entities, topk, query_json, tmp_topk_result));
+        topk_result.emplace_back(tmp_topk_result[0]);
+    }
+//    assert_status(engine->Search(collection_name, weight,
+//                                 query_entities, topk, query_json, topk_result));
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     writeBenchmarkResult(topk_result, result_file_name, search_duration, topk);
@@ -141,40 +149,40 @@ main(int argc, char** argv) {
         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
 
     int number = 0;
-    for (auto nlist : nlists) {
-        CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
-        for (auto nprobe : nprobes) {
-            std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
-            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
-            nlohmann::json search_params = {{"nprobe", nprobe}};
-            Search(engine, search_params, result_file_name);
-            auto topks = engine->GetActualTopk(collection_name);
-            writeTopk(topks);
-        }
-        DropIndex(engine);
-    }
-
-//    std::vector<int> ms = {4, 16, 48};
-    std::vector<int> ms = {4, 8};
-    std::vector<int> efcs = {8, 9, 10, 12, 16, 32};
-//    std::vector<int> efcs = {8, 16, 100, 512};
-    std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 4096};
-    number = 0;
-//    for (auto m : ms) {
-//        for (auto& efc: efcs) {
-//            CreateIndex(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}});
-//            for (auto ef : efs) {
-//                if (ef < topk) continue;
-//                std::cout << number << " M: " << m << " ; efc: " << efc << "; ef: " << ef << std::endl;
-//                auto result_file_name = hnsw_result_prefix + std::to_string(++number) + ".txt";
-//                nlohmann::json search_params = {{"ef", ef}};
-//                Search(engine, search_params, result_file_name);
-//                auto topks = engine->GetActualTopk(collection_name);
-//                writeTopk(topks);
-//            }
+//    for (auto nlist : nlists) {
+//        CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
+//        for (auto nprobe : nprobes) {
+//            std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
+//            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
+//            nlohmann::json search_params = {{"nprobe", nprobe}};
+//            Search(engine, search_params, result_file_name);
+//            auto topks = engine->GetActualTopk(collection_name);
+//            writeTopk(topks);
 //        }
 //        DropIndex(engine);
 //    }
+
+//    std::vector<int> ms = {4, 16, 48};
+    std::vector<int> ms = {4, 8, 16, 48};
+    std::vector<int> efcs = {8, 9, 12, 16, 32, 100, 512};
+//    std::vector<int> efcs = {8, 16, 100, 512};
+    std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 4096};
+    number = 0;
+    for (auto m : ms) {
+        for (auto& efc: efcs) {
+            CreateIndex(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}});
+            for (auto ef : efs) {
+                if (ef < topk) continue;
+                std::cout << number << " M: " << m << " ; efc: " << efc << "; ef: " << ef << std::endl;
+                auto result_file_name = hnsw_result_prefix + std::to_string(++number) + ".txt";
+                nlohmann::json search_params = {{"ef", ef}};
+                Search(engine, search_params, result_file_name);
+                auto topks = engine->GetActualTopk(collection_name);
+                writeTopk(topks);
+            }
+        }
+        DropIndex(engine);
+    }
 
     DropCollection(engine);
 }
