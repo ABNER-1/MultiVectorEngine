@@ -13,8 +13,8 @@
     1024
   ],
   "weights": [
-    0.5,
-    0.5
+    1,
+    1
   ],
   "batch": 10000,
   "nq": 100,
@@ -22,7 +22,9 @@
   "nb": 238459,
   "precision": 18,
   "metric_type": "IP",
-  "result_prefix": "./ip/ip_result",
-  "baseline_result": "./baseline.txt",
+  "strategy": "default",
+  "ivf_result_prefix": "./ip/ivf/ip_result",
+  "hnsw_result_prefix": "./ip/hnsw/ip_result",
+  "baseline_result": "./ip/baseline.txt",
   "use_base_query": false
 }

@@ -104,7 +104,6 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
             conn_ptr_->Search(child_collection_names_[i], {}, container, tpk, extra_params, tqrs[i]);
         if (!status.ok())
             return status;
-        // todo: ???
         std::vector<milvus::Entity>().swap(container);
     }
     Status stat =
@@ -119,13 +118,14 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
                                    int64_t topk, nlohmann::json &extra_params,
                                    milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
+    topks.clear();
     for (auto q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 50l);
+        tpk = std::max(topk, 500l);
         threshold = 2048;
         bool succ_flag = false;
         do {
-            tpk = std::min(threshold, tpk << 1);
+            tpk = std::min(threshold, tpk * 3);
             if (extra_params.contains("ef")) {
                 if (extra_params["ef"] < tpk)
                     extra_params["ef"] = tpk;
@@ -135,6 +135,7 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
+        topks.push_back(tpk);
     }
 
     return Status::OK();

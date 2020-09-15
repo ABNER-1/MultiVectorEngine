@@ -6,54 +6,12 @@ import matplotlib.pyplot as plt
 metrics = {
     "k-nn": {
         "description": "Recall",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: knn(true_distances, run_distances, run_attrs["count"], metrics).attrs['mean'],  # noqa
         "worst": float("-inf"),
         "lim": [0.0, 1.03]
     },
-    "epsilon": {
-        "description": "Epsilon 0.01 Recall",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: epsilon(true_distances, run_distances, run_attrs["count"], metrics).attrs['mean'],  # noqa
-        "worst": float("-inf")
-    },
-    "largeepsilon": {
-        "description": "Epsilon 0.1 Recall",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: epsilon(true_distances, run_distances, run_attrs["count"], metrics, 0.1).attrs['mean'],  # noqa
-        "worst": float("-inf")
-    },
-    "rel": {
-        "description": "Relative Error",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: rel(true_distances, run_distances, metrics),  # noqa
-        "worst": float("inf")
-    },
     "qps": {
         "description": "Queries per second (1/s)",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: queries_per_second(true_distances, run_attrs),  # noqa
         "worst": float("-inf")
-    },
-    "distcomps": {
-        "description": "Distance computations",
-        # "function": lambda true_distances, run_distances,  metrics, run_attrs: dist_computations(true_distances, run_attrs), # noqa
-        "worst": float("inf")
-    },
-    "build": {
-        "description": "Build time (s)",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: build_time(true_distances, run_attrs), # noqa
-        "worst": float("inf")
-    },
-    "candidates": {
-        "description": "Candidates generated",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: candidates(true_distances, run_attrs), # noqa
-        "worst": float("inf")
-    },
-    "indexsize": {
-        "description": "Index size (kB)",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: index_size(true_distances, run_attrs),  # noqa
-        "worst": float("inf")
-    },
-    "queriessize": {
-        "description": "Index size (kB)/Queries per second (s)",
-        # "function": lambda true_distances, run_distances, metrics, run_attrs: index_size(true_distances, run_attrs) / queries_per_second(true_distances, run_attrs), # noqa
-        "worst": float("inf")
     }
 }
 
@@ -180,6 +138,7 @@ def create_plot(all_data, raw, x_log, y_log, xn, yn, fn_out, linestyles,
 
 
 def read_result_from_file(filename):
+    # print(filename)
     topk_result = []
     with open(filename, 'r') as file:
         line = file.readline().split(' ')
@@ -204,45 +163,74 @@ def calc_recall(filename, baseline):
     for top_result, baseline_result in zip(topk_results, baseline_results):
         topk = top_result
         baseline_topk = baseline_result
-
         recall_number = 0
         for id in topk:
             if id in baseline_topk:
                 recall_number += 1
         recall = recall_number / len(topk)
         recalls.append(recall)
-        # result_metric.append(("useless", "algo_name", recall, qps))
     return numpy.mean(recalls), qps
 
 
-if __name__ == "__main__":
-    linestyle = create_linestyles(["ip", "ipnra", "l2"])
+def remove_useless_point(m_datas):
+    result = []
+    metrics = sorted(m_datas, key=lambda x: -x[3])
+    result.append(metrics[0])
+    for metric in metrics:
+        previous = result[len(result) - 1]
+        if metric[2] > previous[2]:
+            result.append(metric)
+    return result
+
+
+def get_metric_data(data_dir, baseline_file, name):
+    result_files = []
+    files = os.listdir(data_dir)
+    for file in files:
+        if not os.path.isdir(file):
+            result_files.append(os.path.join(data_dir, file))
+
+    metric_datas = []
+    for result_file in result_files:
+        recall, qps = calc_recall(result_file, baseline_file)
+        metric_datas.append(("useless", name, recall, qps))
+    metric_datas = remove_useless_point(metric_datas)
+    print(name, metric_datas)
+    return metric_datas
+
+
+def draw_ip(image_name):
+    linestyle = create_linestyles(["IP IVF-Flat", "IP HNSW", "IP NRA IVF-Flat", "IP NRA HNSW"])
     baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ip_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip"
+    ip_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2"
     ipnra_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra"
-    result_files = []
-    files = os.listdir(ip_dir)
-    for file in files:
-        if not os.path.isdir(file):
-            result_files.append(os.path.join(ip_dir, file))
-    metrics_datas = []
-    for result_file in result_files:
-        recall, qps = calc_recall(result_file, baseline_file)
-        metrics_datas.append(("useless", "algo_name", recall, qps))
-    print("ip", metrics_datas)
 
-    result_files = []
-    files = os.listdir(ipnra_dir)
-    for file in files:
-        if not os.path.isdir(file):
-            result_files.append(os.path.join(ipnra_dir, file))
-    nra_metrics_datas = []
-    for result_file in result_files:
-        recall, qps = calc_recall(result_file, baseline_file)
-        nra_metrics_datas.append(("useless", "algo_name", recall, qps))
-    print("nra", nra_metrics_datas)
+    ip_metric_data = get_metric_data(ip_dir, baseline_file, "IP IVF-Flat")
 
-    data = {"ip": metrics_datas, "ipnra": nra_metrics_datas}
+    nra_metric_data = get_metric_data(ipnra_dir, baseline_file, "IP NRA IVF-Flat")
+
+    data = {"IP IVF-Flat": ip_metric_data, "IP NRA IVF-Flat": nra_metric_data}
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
-                xn='k-nn', yn='qps', fn_out="./test1.png",
+                xn='k-nn', yn='qps', fn_out=image_name,
                 linestyles=linestyle, batch=False)
+
+
+def draw_l2(image_name):
+    linestyle = create_linestyles(["L2 NRA IVF-Flat", "L2 NRA HNSW"])
+    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
+    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2"
+    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra"
+
+    ivf_metric_data = get_metric_data(ivf_dir, baseline_file, "L2 NRA IVF-Flat")
+
+    hnsw_metric_data = get_metric_data(hnsw_dir, baseline_file, "L2 NRA HNSW")
+
+    data = {"L2 NRA IVF-Flat": ivf_metric_data, "L2 NRA HNSW": hnsw_metric_data}
+    create_plot(all_data=data, raw=False, x_log=False, y_log=True,
+                xn='k-nn', yn='qps', fn_out=image_name,
+                linestyles=linestyle, batch=False)
+
+
+if __name__ == "__main__":
+    draw_ip("./ip_result.png")
+    # draw_l2("./l2_result.png")

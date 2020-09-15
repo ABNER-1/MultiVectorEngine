@@ -304,7 +304,7 @@ int main(int argc, char **argv) {
 
 //    show_result(result);
     std::string baseline_file = config.at("baseline_result");
-    writeBenchmarkResult(result, baseline_file, search_duration);
+    writeBenchmarkResult(result, baseline_file, search_duration, topk);
 
 //    while (scanf("%d", &nq) != EOF) {
 //        if (nq <= 0) continue;

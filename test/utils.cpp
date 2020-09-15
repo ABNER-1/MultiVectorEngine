@@ -116,21 +116,22 @@ generateIds(int nq, std::vector<int64_t>& id_arrays) {
 void
 generateIds(int nq, std::vector<int64_t>& id_arrays, int base_id) {
     for (int i = 0; i < nq; ++i) {
-        id_arrays.push_back(++ base_id);
+        id_arrays.push_back(++base_id);
     }
 }
 
 void
 writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
                      const std::string& result_file,
-                     float total_time) {
+                     float total_time, int topk) {
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     std::ofstream out(result_file);
     out.precision(18);
     out << topk_query_result.size() << " " << topk_query_result[0].ids.size()
         << " " << total_time << std::endl;
     for (auto& result : topk_query_result) {
-        for (int i = 0; i < result.ids.size(); ++i) {
+        for (int i = 0; i < topk; ++i) {
+            if (i > topk_query_result.size())out << -1 << std::endl;
             out << result.ids[i] << " " << result.distances[i] << std::endl;
         }
     }
@@ -414,7 +415,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         base_data_locations.emplace_back(config.at("base_data_locations")[i]);
         query_data_locations.emplace_back(config.at("query_data_locations")[i]);
         dim.emplace_back(config.at("dimensions")[i]);
-        if(max_dim < config.at("dimensions")[i])
+        if (max_dim < config.at("dimensions")[i])
             max_dim = config.at("dimensions")[i];
         acc_dims[i] = i ? acc_dims[i - 1] + dim[i - 1] : 0;
         weights.emplace_back(config.at("weights")[i]);
@@ -457,11 +458,11 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
         auto ub = (i + limit_insert_rows > vector_num) ? vector_num : i + limit_insert_rows;
         std::vector<RowEntity> insert_batch(ub - lb, RowEntity(vec_group_num, milvus::Entity()));
         std::vector<int64_t> ids_batch(ub - lb);
-        for (auto ii = lb; ii < ub; ++ ii) {
+        for (auto ii = lb; ii < ub; ++ii) {
             ids_batch[ii - i] = ids[ii];
-            for (auto j = 0; j < vec_group_num; ++ j) {
+            for (auto j = 0; j < vec_group_num; ++j) {
                 insert_batch[ii - i][j].float_data.resize(dim[j]);
-                for (auto k = 0; k < dim[j]; ++ k)
+                for (auto k = 0; k < dim[j]; ++k)
                     insert_batch[ii - i][j].float_data[k] = row_entities[ii][j].float_data[k];
             }
         }
@@ -522,7 +523,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               nlohmann::json& query_json,
               const nlohmann::json& config,
               milvus::MetricType metric_type,
-              const std::string &collection_name) {
+              const std::string& collection_name) {
     using namespace milvus::multivector;
     auto assert_status = [](milvus::Status status) {
         if (!status.ok()) {
@@ -548,7 +549,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     for (auto i = 0; i < vec_group_num; ++i) {
         query_data_locations.emplace_back(config.at("query_data_locations")[i]);
         dim.emplace_back(config.at("dimensions")[i]);
-        if(max_dim < config.at("dimensions")[i])
+        if (max_dim < config.at("dimensions")[i])
             max_dim = config.at("dimensions")[i];
         acc_dims[i] = i ? acc_dims[i - 1] + dim[i - 1] : 0;
         weights.emplace_back(config.at("weights")[i]);

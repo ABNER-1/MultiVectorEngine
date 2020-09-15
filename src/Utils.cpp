@@ -352,7 +352,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
             // maintain TopK results
             if (!nodes[pos].result_flag && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
                 nodes[pos].result_flag = true;
-                result_set.emplace(pos);
+                result_set.push(pos);
                 if (result_set.size() > TopK) {
                     nodes[result_set.top()].result_flag = false;
                     result_set.pop();
@@ -365,7 +365,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                 }
             }
             nodes[pos].group_flags[i] = true;
-            nodes[pos].occurs_time++;
+            ++nodes[pos].occurs_time;
         }
         for (auto &new_node_id :new_boy)
             nodes[new_node_id].ub = cur_max_estimate_value;
@@ -389,8 +389,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
             tmp_queue.push_back(result_set.top());
             result_set.pop();
         }
-        for (auto i = 0; i < tmp_queue.size(); ++i)
-            result_set.emplace(tmp_queue[i]);
+        for (auto& i: tmp_queue) result_set.push(i);
         std::vector<size_t>().swap(tmp_queue);
 
         // judge exit condition

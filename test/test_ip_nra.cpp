@@ -83,7 +83,7 @@ testIndexTypeIPNra(std::shared_ptr<milvus::multivector::MultiVectorEngine> engin
 //    }
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
-    writeBenchmarkResult(topk_result, result_file_name, search_duration);
+    writeBenchmarkResult(topk_result, result_file_name, search_duration, topk);
 
     assert_status(engine->DropIndex(collection_name));
     for (auto& id_arrays: all_id_arrays) {

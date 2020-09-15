@@ -127,6 +127,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 int64_t topk, nlohmann::json &extra_params,
                                 milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
+    topks.clear();
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
         tpk = topk;
@@ -143,6 +144,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
+        topks.push_back(tpk);
 //        if (succ_flag)
 //            std::cout << "the " << q + 1 << "th query recall succ! tpk = " << tpk << std::endl;
 //        else

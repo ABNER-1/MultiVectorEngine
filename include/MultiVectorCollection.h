@@ -43,6 +43,8 @@ class MultiVectorCollection {
            int64_t topk, nlohmann::json &extra_params,
            milvus::TopKQueryResult &topk_query_results) = 0;
 
+    std::vector<int> topks;
+
  protected:
     std::string
     GenerateChildCollectionName(int64_t idx) {

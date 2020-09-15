@@ -54,10 +54,16 @@ class MultiVectorEngine : public BaseEngine {
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
 
+    std::vector<int>
+    GetActualTopk(const std::string& collection_name) {
+        return getOrFetchCollectionPtr(collection_name)->topks;
+    }
+
  private:
     Status
     createCollectionPtr(const std::string& collection_name,
-        milvus::MetricType metric_type, const std::string& strategy);
+                        milvus::MetricType metric_type,
+                        const std::string& strategy);
 
     MultiVectorCollectionPtr
     getOrFetchCollectionPtr(const std::string& collection_name);

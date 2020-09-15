@@ -64,9 +64,3 @@ target_link_libraries(brute_force
         hdf5_serial
         hdf5_cpp
         pthread)
-
-add_executable(test_utils main.cpp utils.cpp)
-target_link_libraries(test_utils
-        hdf5_serial
-        hdf5_cpp
-        milvus_sdk)

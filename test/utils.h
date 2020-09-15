@@ -45,7 +45,7 @@ readArraysFromSplitedData(const std::vector<std::string>& file_names,
 void
 writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
                      const std::string& result_file,
-                     float total_time);
+                     float total_time, int topk);
 
 void
 showResult(const milvus::TopKQueryResult& topk_query_result);
