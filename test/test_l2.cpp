@@ -8,28 +8,13 @@
 
 using namespace milvus::multivector;
 
-int
-main(int argc, char **argv) {
-    std::string config_file;
-    if (argc != 2) {
-        std::cout << "there must be one parameter 4 this program which tells the location of config file!" << std::endl;
-        return EXIT_FAILURE;
+auto assert_status = [](milvus::Status status) {
+    if (!status.ok()) {
+        std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
     }
-    config_file = std::string(argv[1]);
-    nlohmann::json config;
-    std::ifstream f_conf(config_file);
-    f_conf >> config;
-    f_conf.close();
-    using namespace milvus::multivector;
-    std::string ip = "127.0.0.1";
-    std::string port = "19530";
-    auto engine = std::make_shared<MultiVectorEngine>(ip, port);
+};
 
-    auto assert_status = [](milvus::Status status) {
-        if (!status.ok()) {
-            std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
-        }
-    };
+std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engine) {
 
     // create collection and insert data, once per test, save time
     srand((unsigned)time(nullptr));
@@ -113,9 +98,78 @@ main(int argc, char **argv) {
     std::cout << "Insert " << insert_cnt << "/" << vector_num << " vectors into milvus." << std::endl;
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Insert data costs " << search_duration << " ms." << std::endl;
+    return collection_name;
+}
+
+void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
+    std::string result_prefix = config.at("ivf_result_prefix");
+    std::vector<int> nlists = {128, 256, 512, 1024, 2048};
+    std::vector<int> nprobes = {1, 4, 8, 16, 32, 64, 128, 256};
+    int cnt = 0;
+    for (auto &nlist : nlists) {
+        for (auto &nprobe: nprobes) {
+            std::cout << "nlist = " << nlist << ", nprobe = " << nprobe << std::endl;
+            std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
+            nlohmann::json search_args = {{"nprobe", nprobe}};
+            testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}}, search_args,
+                config, milvus::MetricType::L2, collection_name, result_file);
+        }
+    }
+}
+
+void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
+    std::string result_prefix = config.at("hnsw_result_prefix");
+    std::vector<int> ms = {4, 16, 24, 32};
+    std::vector<int> efcs = {50, 200, 400};
+    std::vector<int> efss = {100, 400, 1000};
+    int cnt = 0;
+    for (auto &m : ms) {
+        for (auto &efc: efcs) {
+            for (auto &efs : efss) {
+                std::cout << "M = " << m << ", efConstruction = " << efc << ", efSearch = " << efs << std::endl;
+                std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
+                nlohmann::json search_args = {{"ef", efs}};
+                testIndexType(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}}, search_args,
+                              config, milvus::MetricType::L2, collection_name, result_file);
+            }
+        }
+    }
+}
+
+int
+main(int argc, char **argv) {
+    std::string config_file;
+    if (argc != 2) {
+        std::cout << "there must be one parameter 4 this program which tells the location of config file!" << std::endl;
+        return EXIT_FAILURE;
+    }
+    config_file = std::string(argv[1]);
+    nlohmann::json config;
+    std::ifstream f_conf(config_file);
+    f_conf >> config;
+    f_conf.close();
+    using namespace milvus::multivector;
+    std::string ip = "127.0.0.1";
+    std::string port = "19530";
+    auto engine = std::make_shared<MultiVectorEngine>(ip, port);
+
+    auto collection_name = CreateCollection(config, engine);
+    TestIVFFLAT(config, engine, collection_name);
+    TestHNSW(config, engine, collection_name);
+
+    assert_status(engine->DropCollection(collection_name));
+}
+
+/*
+ * //    nlohmann::json search_args = {{"nprobe", 80}};
+//    testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, search_args, config, milvus::MetricType::L2, collection_name);
+//    search_args = {{"ef", 500}};
+//    testIndexType(engine, milvus::IndexType::HNSW,
+//                  {{"M", 32}, {"efConstruction", 200}},
+//                  search_args, config, milvus::MetricType::L2, collection_name);
+
+
 //    testIndexType(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
-    nlohmann::json search_args = {{"nprobe", 80}};
-    testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, search_args, config, milvus::MetricType::L2, collection_name);
 //    testIndexType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
 //    testIndexType(engine, milvus::IndexType::IVFPQ,
 //                  {{"nlist", 1024}, {"m", 32}},
@@ -124,12 +178,7 @@ main(int argc, char **argv) {
 //    testIndexType(engine, milvus::IndexType::RNSG,
 //                  {{"search_length", 45}, {"out_degree", 50}, {"candidate_pool_size", 300}, {"knng", 100}},
 //                  {{"search_length", 100}}, config, milvus::MetricType::L2);
-    search_args = {{"ef", 500}};
-    testIndexType(engine, milvus::IndexType::HNSW,
-                  {{"M", 32}, {"efConstruction", 200}},
-                  search_args, config, milvus::MetricType::L2, collection_name);
 //    testIndexType(engine, milvus::IndexType::ANNOY,
 //                  {{"n_trees", 8}},
 //                  {{"search_k", -1}}, config, milvus::MetricType::L2);
-    assert_status(engine->DropCollection(collection_name));
-}
+ */

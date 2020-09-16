@@ -39,6 +39,15 @@ target_link_libraries(test_l2
         hdf5_cpp
         pthread)
 
+add_executable(test_gist_l2 test_gist_l2.cpp utils.cpp)
+
+target_link_libraries(test_gist_l2
+        multi_vector
+        milvus_sdk
+        hdf5_serial
+        hdf5_cpp
+        pthread)
+
 add_executable(test_nra2 test_nra2.cpp)
 
 target_link_libraries(test_nra2
