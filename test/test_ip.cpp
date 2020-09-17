@@ -91,16 +91,19 @@ Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
     using namespace milvus::multivector;
     milvus::TopKQueryResult topk_result;
     auto ts = std::chrono::high_resolution_clock::now();
-//    for (auto & query_entity : query_entities){
-//        std::vector<RowEntity> tmp_query_entities;
-//        milvus::TopKQueryResult tmp_topk_result;
-//        tmp_query_entities.emplace_back(query_entity);
-//        assert_status(engine->Search(collection_name, weight,
-//                                     tmp_query_entities, topk, query_json, tmp_topk_result));
-//        topk_result.emplace_back(tmp_topk_result[0]);
-//    }
-    assert_status(engine->Search(collection_name, weight,
-                                 query_entities, topk, query_json, topk_result));
+    if (strategy == "default") {
+        for (auto& query_entity : query_entities) {
+            std::vector<RowEntity> tmp_query_entities;
+            milvus::TopKQueryResult tmp_topk_result;
+            tmp_query_entities.emplace_back(query_entity);
+            assert_status(engine->Search(collection_name, weight,
+                                         tmp_query_entities, topk, query_json, tmp_topk_result));
+            topk_result.emplace_back(tmp_topk_result[0]);
+        }
+    } else {
+        assert_status(engine->Search(collection_name, weight,
+                                     query_entities, topk, query_json, topk_result));
+    }
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     writeBenchmarkResult(topk_result, result_file_name, search_duration, topk);
@@ -108,7 +111,6 @@ Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
 
 void
 writeTopk(const std::vector<int>& topks) {
-
     std::ofstream out("./topk.txt", std::ofstream::out | std::ofstream::app);
     out << topks.size() << " ";
     for (auto& tmp_topk : topks) {

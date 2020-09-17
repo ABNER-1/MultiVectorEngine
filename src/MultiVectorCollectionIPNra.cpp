@@ -136,12 +136,11 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
-//        std::cout<<q<<std::endl;
         int64_t threshold, tpk;
-        tpk = std::max(topk, 2048l);
-        threshold = 2048;
+        tpk = std::max(topk, 500l);
+        threshold = 16384;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk * 3);
@@ -158,6 +157,19 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
     }
 
     return Status::OK();
+}
+
+void
+MultiVectorCollectionIPNra::GetRowEntityByID(const std::vector<int64_t>& id_arrays,
+                                             std::vector<RowEntity>& row_entities) {
+    for (auto i = 0; i < child_collection_names_.size(); ++i) {
+        auto& collection = child_collection_names_[i];
+        std::vector<Entity> entities_data;
+        conn_ptr_->GetEntityByID(collection, id_arrays, entities_data);
+        for (auto j = 0; j < entities_data.size(); ++j) {
+            row_entities[j][i].float_data.swap(entities_data[j].float_data);
+        }
+    }
 }
 
 } // namespace multivector

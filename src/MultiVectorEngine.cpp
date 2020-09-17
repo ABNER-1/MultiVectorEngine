@@ -109,5 +109,45 @@ MultiVectorEngine::getOrFetchCollectionPtr(const std::string& collection_name) {
     return nullptr;
 }
 
+void
+MultiVectorEngine::CalcDistance(const std::string& collection_name,
+                                const std::vector<int64_t>& id_arrays,
+                                const RowEntity& query_entities,
+                                const std::vector<float>& weights,
+                                QueryResult& query_result) {
+    std::vector<RowEntity> row_entities;
+    GetRowEntityByID(collection_name, id_arrays, row_entities);
+    CalcDistanceImpl(row_entities, id_arrays, query_entities, weights, query_result);
+}
+
+void
+MultiVectorEngine::GetRowEntityByID(const std::string& collection_name,
+                                    const std::vector<int64_t>& id_arrays,
+                                    std::vector<RowEntity>& row_entities) {
+    row_entities.resize(id_arrays.size());
+    getOrFetchCollectionPtr(collection_name)->GetRowEntityByID(id_arrays, row_entities);
+}
+
+void
+MultiVectorEngine::CalcDistanceImpl(const std::vector<RowEntity>& row_entities,
+                                    const std::vector<int64_t>& id_arrays,
+                                    const RowEntity& query_entities,
+                                    const std::vector<float>& weights,
+                                    milvus::QueryResult& query_result) {
+    query_result.ids = id_arrays;
+    int group_num = row_entities.size();
+    int topk = row_entities[0].size();
+    query_result.ids.resize(topk);
+    for (auto j = 0; j < topk; ++j) {
+        for (auto i = 0; i < group_num; ++i) {
+            auto& data = row_entities[i][j].float_data;
+            for (auto k = 0; k < data.size(); ++k) {
+                auto tmp = data[k] - query_entities[i].float_data[k];
+                query_result.distances[j] += weights[i] * (tmp * tmp);
+            }
+        }
+    }
+}
+
 } // namespace multivector
 } // namespace milvus

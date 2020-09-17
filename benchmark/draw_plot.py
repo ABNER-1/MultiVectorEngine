@@ -178,6 +178,8 @@ def calc_recall(filename, baseline):
 
 def remove_useless_point(m_datas):
     result = []
+    if len(m_datas) == 0:
+        return result
     metrics = sorted(m_datas, key=lambda x: -x[3])
     result.append(metrics[0])
     for metric in metrics:
@@ -203,97 +205,60 @@ def get_metric_data(data_dir, baseline_file, name):
     return metric_datas
 
 
-def draw_ip(image_name):
-    ivf_name = "IP IVF-Flat"
-    hnsw_name = "IP HNSW"
-    nra_ivf_name = "IP NRA IVF-Flat"
-    nra_hnsw_name = "IP NRA HNSW"
+def draw_ip_recipe(image_name):
+    linestyle = create_linestyles([ivf_name, hnsw_name,
+                                   nra_ivf_name, nra_hnsw_name,
+                                   nra_ivf_omp_name, nra_hnsw_omp_name])
+    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/baseline.txt"
+    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/ivf"
+    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/hnsw"
 
-    nra_ivf_2 = "NRA IVF 2"
-    linestyle = create_linestyles([ivf_name, hnsw_name, nra_ivf_name, nra_hnsw_name, nra_ivf_2])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ip_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip/hnsw"
-    ipnra_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/ivf"
-    ipnra_dir_1 = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/ivf2"
-    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/hnsw"
+    nra_ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-ivf"
+    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-hnsw"
+    nra_ivf_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-ivf2"
+    nra_hnsw_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-hnsw2"
 
-    ip_metric_data = get_metric_data(ip_dir, baseline_file, ivf_name)
-
-    hnsw_metric_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
-
-    nra_metric_data = get_metric_data(ipnra_dir, baseline_file, nra_ivf_name)
-
+    ivf_data = get_metric_data(ivf_dir, baseline_file, ivf_name)
+    hnsw_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
+    nra_ivf_data = get_metric_data(nra_ivf_dir, baseline_file, nra_ivf_name)
     nra_hnsw_data = get_metric_data(nra_hnsw_dir, baseline_file, nra_hnsw_name)
+    nra_omp_ivf_data = get_metric_data(nra_ivf_omp_dir, baseline_file, nra_ivf_omp_name)
+    nra_omp_hnsw_data = get_metric_data(nra_hnsw_omp_dir, baseline_file, nra_hnsw_name)
 
-    nra_2_data = get_metric_data(ipnra_dir_1, baseline_file, nra_ivf_2)
+    data = {ivf_name: ivf_data, hnsw_name: hnsw_data,
+            nra_ivf_name: nra_ivf_data, nra_hnsw_name: nra_hnsw_data,
+            nra_ivf_omp_name: nra_omp_ivf_data,
+            nra_hnsw_omp_name: nra_omp_hnsw_data}
 
-    data = {ivf_name: ip_metric_data, nra_ivf_name: nra_metric_data,
-            hnsw_name: hnsw_metric_data, nra_ivf_2: nra_2_data, nra_hnsw_name: nra_hnsw_data}
-    # data = {ivf_name: ip_metric_data, nra_ivf_name: nra_metric_data,
-    #         hnsw_name: hnsw_metric_data, nra_hnsw_name: nra_hnsw_data}
-    create_plot(all_data=data, raw=False, x_log=False, y_log=True,
-                xn='k-nn', yn='qps', fn_out=image_name,
-                linestyles=linestyle, batch=False)
-
-
-def draw_ip_compare(image_name):
-    ivf_name = "IP IVF-Flat"
-    hnsw_name = "IP HNSW"
-    nra_ivf_name = "IP NRA IVF-Flat"
-    nra_hnsw_name = "IP NRA HNSW"
-
-    nra_ivf_2 = "NRA IVF 2"
-    linestyle = create_linestyles([ivf_name, hnsw_name, nra_ivf_name, nra_hnsw_name, nra_ivf_2])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ip_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2/ivf"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2/hnsw"
-    ipnra_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/ivf"
-    ipnra_dir_1 = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/ivf2"
-    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/hnsw"
-
-    ip_metric_data = get_metric_data(ip_dir, baseline_file, ivf_name)
-
-    hnsw_metric_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
-
-    nra_metric_data = get_metric_data(ipnra_dir, baseline_file, nra_ivf_name)
-
-    nra_hnsw_data = get_metric_data(nra_hnsw_dir, baseline_file, nra_hnsw_name)
-
-    nra_2_data = get_metric_data(ipnra_dir_1, baseline_file, nra_ivf_2)
-
-    data = {ivf_name: ip_metric_data, nra_ivf_name: nra_metric_data,
-            hnsw_name: hnsw_metric_data, nra_ivf_2: nra_2_data, nra_hnsw_name: nra_hnsw_data}
-    # data = {ivf_name: ip_metric_data, nra_ivf_name: nra_metric_data,
-    #         hnsw_name: hnsw_metric_data, nra_hnsw_name: nra_hnsw_data}
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
                 xn='k-nn', yn='qps', fn_out=image_name,
                 linestyles=linestyle, batch=False)
 
 
 def draw_ip_glove(image_name):
-    ivf_name = "IP IVF-Flat"
-    hnsw_name = "IP HNSW"
-    nra_ivf_name = "IP NRA IVF-Flat"
-    nra_hnsw_name = "IP NRA HNSW"
-    linestyle = create_linestyles([ivf_name, hnsw_name, nra_ivf_name, nra_hnsw_name])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip1/baseline.txt"
-    ip_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip1/ivf"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip1/hnsw"
-    ipnra_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/ivf"
-    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra/hnsw"
+    linestyle = create_linestyles([ivf_name, hnsw_name,
+                                   nra_ivf_name, nra_hnsw_name,
+                                   nra_ivf_omp_name, nra_hnsw_omp_name])
+    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/baseline.txt"
 
-    ip_metric_data = get_metric_data(ip_dir, baseline_file, ivf_name)
+    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/ivf"
+    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/hnsw"
+    nra_ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/nra-ivf1"
+    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/nra-hnsw1"
+    nra_ivf_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/nra-ivf"
+    nra_hnsw_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-glove/nra-hnsw"
 
-    hnsw_metric_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
+    ivf_data = get_metric_data(ivf_dir, baseline_file, ivf_name)
+    hnsw_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
+    nra_ivf_data = get_metric_data(nra_ivf_dir, baseline_file, nra_ivf_name)
+    nra_hnsw_data = get_metric_data(nra_hnsw_dir, baseline_file, nra_hnsw_name)
+    nra_omp_ivf_data = get_metric_data(nra_ivf_omp_dir, baseline_file, nra_ivf_omp_name)
+    nra_omp_hnsw_data = get_metric_data(nra_hnsw_omp_dir, baseline_file, nra_hnsw_name)
 
-    # nra_metric_data = get_metric_data(ipnra_dir, baseline_file, nra_ivf_name)
-    #
-    # nra_hnsw_data = get_metric_data(nra_hnsw_dir, baseline_file, nra_hnsw_name)
-
-    # data = {ivf_name: ip_metric_data, nra_ivf_name: nra_metric_data,
-    #          nra_hnsw_name: nra_hnsw_data}
-    data = {ivf_name: ip_metric_data, hnsw_name: hnsw_metric_data}
+    data = {ivf_name: ivf_data, hnsw_name: hnsw_data,
+            nra_ivf_name: nra_ivf_data, nra_hnsw_name: nra_hnsw_data,
+            nra_ivf_omp_name: nra_omp_ivf_data,
+            nra_hnsw_omp_name: nra_omp_hnsw_data}
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
                 xn='k-nn', yn='qps', fn_out=image_name,
                 linestyles=linestyle, batch=False)
@@ -302,7 +267,7 @@ def draw_ip_glove(image_name):
 def draw_l2(image_name):
     linestyle = create_linestyles(["L2 NRA IVF-Flat", "L2 NRA HNSW"])
     baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2"
+    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe"
     hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra"
 
     ivf_metric_data = get_metric_data(ivf_dir, baseline_file, "L2 NRA IVF-Flat")
@@ -316,7 +281,13 @@ def draw_l2(image_name):
 
 
 if __name__ == "__main__":
-    # draw_ip_compare("./ip_result_recipe_compare_single.png")
-    # draw_ip("./ip_result_recipe.png")
+    ivf_name = "IVF-Flat"
+    hnsw_name = "HNSW"
+    nra_ivf_name = "NRA IVF-Flat"
+    nra_hnsw_name = "NRA HNSW"
+    nra_ivf_omp_name = "NRA IVF-Flat with openMP"
+    nra_hnsw_omp_name = "NRA HNSW with openMP"
+
+    draw_ip_recipe("./ip_result_compare.png")
     draw_ip_glove("./ip_result_glove.png")
     # draw_l2("./l2_result.png")

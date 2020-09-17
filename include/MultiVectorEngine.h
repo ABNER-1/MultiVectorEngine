@@ -25,9 +25,6 @@ class MultiVectorEngine : public BaseEngine {
                      const std::vector<int64_t>& index_file_sizes,
                      const std::string& strategy = "default") override;
 
-    // todo: 1 find collection_name in collections_
-    // todo: 2 for id in collections_[collection_name].second:
-    //  do milvus.dropindex(GenerateChildCollectionName(collection_name, id));
     Status
     DropCollection(const std::string& collection_name) override;
 
@@ -59,7 +56,25 @@ class MultiVectorEngine : public BaseEngine {
         return getOrFetchCollectionPtr(collection_name)->topks;
     }
 
+    void
+    CalcDistance(const std::string& collection_name,
+                 const std::vector<int64_t>& id_arrays,
+                 const RowEntity& query_entities,
+                 const std::vector<float>& weights,
+                 QueryResult& query_result);
  private:
+    void
+    GetRowEntityByID(const std::string& collection_name,
+                     const std::vector<int64_t>& id_arrays,
+                     std::vector<RowEntity>& row_entities);
+
+    void
+    CalcDistanceImpl(const std::vector<RowEntity>& row_entities,
+                     const std::vector<int64_t>& id_arrays,
+                     const RowEntity& query_entities,
+                     const std::vector<float>& weights,
+                     QueryResult& query_result);
+
     Status
     createCollectionPtr(const std::string& collection_name,
                         milvus::MetricType metric_type,
