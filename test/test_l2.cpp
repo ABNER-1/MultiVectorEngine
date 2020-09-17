@@ -103,8 +103,8 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
 
 void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("ivf_result_prefix");
-    std::vector<int> nlists = {128, 256, 512, 1024, 2048};
-    std::vector<int> nprobes = {1, 4, 8, 16, 32, 64, 128, 256};
+    std::vector<int> nlists = {128, 512, 1024, 2048};
+    std::vector<int> nprobes = {1, 4, 8, 32, 128, 256};
     int cnt = 0;
     for (auto &nlist : nlists) {
         for (auto &nprobe: nprobes) {
@@ -119,9 +119,9 @@ void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::stri
 
 void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("hnsw_result_prefix");
-    std::vector<int> ms = {4, 16, 24, 32};
-    std::vector<int> efcs = {50, 200, 400};
-    std::vector<int> efss = {100, 400, 1000};
+    std::vector<int> ms = {4, 16, 24};
+    std::vector<int> efcs = {8, 50, 400};
+    std::vector<int> efss = {50, 100, 400};
     int cnt = 0;
     for (auto &m : ms) {
         for (auto &efc: efcs) {

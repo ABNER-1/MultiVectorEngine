@@ -51,7 +51,8 @@ int main() {
     }
     milvus::QueryResult result;
     std::vector<float> weight = {1, 1, 1};
-    auto ok_ = NoRandomAccessAlgorithmL2(tqrs, result, weight, 2);
+//    auto ok_ = NoRandomAccessAlgorithmL2(tqrs, result, weight, 2);
+    auto ok_ = ONRAL2(tqrs, result, weight, 2);
 
 //    std::cout << "result: " << std::endl;
     std::cout << "result is " << (ok_ ? "ok" : "not ok") << ": " << std::endl;

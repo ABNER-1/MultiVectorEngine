@@ -128,7 +128,8 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
             tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
         }
     }
-    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+//    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    Status stat = ONRAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     return stat;
 }
 
@@ -142,7 +143,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = topk;
+        tpk = std::max(int(topk), 200);
         threshold = 16384;
         bool succ_flag = false;
         do {

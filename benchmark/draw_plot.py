@@ -301,9 +301,9 @@ def draw_ip_glove(image_name):
 
 def draw_l2(image_name):
     linestyle = create_linestyles(["L2 NRA IVF-Flat", "L2 NRA HNSW"])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip2"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra"
+    baseline_file = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline.txt"
+    ivf_dir = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/ivfflat"
+    hnsw_dir = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/hnsw"
 
     ivf_metric_data = get_metric_data(ivf_dir, baseline_file, "L2 NRA IVF-Flat")
 
@@ -318,5 +318,5 @@ def draw_l2(image_name):
 if __name__ == "__main__":
     # draw_ip_compare("./ip_result_recipe_compare_single.png")
     # draw_ip("./ip_result_recipe.png")
-    draw_ip_glove("./ip_result_glove.png")
-    # draw_l2("./l2_result.png")
+    # draw_ip_glove("./ip_result_glove.png")
+    draw_l2("./l2_result.png")

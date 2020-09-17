@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <queue>
+#include <chrono>
 #include "Utils.h"
 
 
@@ -287,6 +288,74 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
     return ret;
 }
 
+//TA
+bool
+ONRAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
+                          milvus::QueryResult &result,
+                          const std::vector<float> &weight,
+                          int64_t TopK) {
+    bool ret = false;
+    auto num_group = ng_nq_tpk.size();
+    auto topk = ng_nq_tpk[0][0].ids.size();
+    std::vector<const int64_t *> p_ids(num_group, 0);
+    std::vector<const float *> p_dists(num_group, 0);
+    std::unordered_map<size_t, std::pair<float, bool>> hash_tbl;
+    auto cmp = [&](std::pair<size_t, float> &a, std::pair<size_t, float> &b) { return a.second < b.second; };
+    std::priority_queue<std::pair<size_t, float>, std::vector<std::pair<size_t, float>>, decltype(cmp)> result_set(cmp);
+    std::vector<float> sum_row(topk, 0.0);
+
+    for (auto i = 0; i < num_group; ++i) {
+        p_ids[i] = ng_nq_tpk[i][0].ids.data();
+        p_dists[i] = ng_nq_tpk[i][0].distances.data();
+    }
+    for (auto i = 0; i < topk; ++ i) {
+        for (auto j = 0; j < num_group; ++ j) {
+            if (p_ids[j][i] < 0)
+                continue;
+            sum_row[i] += p_dists[j][i] * weight[j];
+            auto target = hash_tbl.find(p_ids[j][i]);
+            if (target != hash_tbl.end()) {
+                target->second.first += p_dists[j][i] * weight[j];
+            } else {
+                hash_tbl[p_ids[j][i]] = std::make_pair(p_dists[j][i] * weight[j], false);
+            }
+        }
+    }
+
+    for (auto i = 0; i < topk; ++ i) {
+        for (auto j = 0; j < num_group; ++ j) {
+            if (p_ids[j][i] < 0)
+                continue;
+            auto target = hash_tbl.find(p_ids[j][i]);
+            if (!target->second.second) {
+                if (result_set.size() < TopK || target->second.first < result_set.top().second)
+                target->second.second = true;
+                result_set.emplace(target->first, target->second.first);
+                if (result_set.size() > TopK) {
+                    auto out = hash_tbl.find(result_set.top().first);
+                    out->second.second = false;
+                    result_set.pop();
+                }
+            }
+        }
+        if (sum_row[i] > result_set.top().second) {
+            ret = true;
+            break;
+        }
+    }
+    auto tot_size = result_set.size();
+    result.ids.resize(tot_size);
+    result.distances.resize(tot_size);
+    tot_size = 0;
+    while (!result_set.empty()) {
+        result.ids[tot_size] = result_set.top().first;
+        result.distances[tot_size] = result_set.top().second;
+        result_set.pop();
+        tot_size ++;
+    }
+    return ret;
+}
+
 bool
 NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                           milvus::QueryResult &result,
@@ -411,6 +480,187 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         result.distances[tot_size] = nodes[result_set.top()].lb;
         result_set.pop();
     }
+    return ret;
+}
+
+bool
+NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
+                          milvus::QueryResult &result,
+                          const std::vector<float> &weight,
+                          int64_t TopK) {
+    std::chrono::high_resolution_clock::time_point ts, te, t0, t1, tl0, tl1;
+    ts = std::chrono::high_resolution_clock::now();
+    long round1_duration, heap_duration, hash_duration;
+    round1_duration = heap_duration = hash_duration = 0;
+    bool ret = false;
+    auto num_group = ng_nq_tpk.size();
+    auto topk = ng_nq_tpk[0][0].ids.size();
+    std::vector<const int64_t *> p_ids(num_group, 0);
+    std::vector<const float *> p_dists(num_group, 0);
+    std::vector<NRANode> nodes;
+    std::unordered_map<int64_t, size_t> hash_tbl;
+
+    float cur_max_estimate_value = 0.0;
+    auto cmp = [&](size_t i, size_t j) { return nodes[i].lb > nodes[j].lb; };
+    std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
+    std::vector<size_t> tmp_queue;
+    tl0 = std::chrono::high_resolution_clock::now();
+    for (auto i = 0; i < num_group; ++i) {
+        p_ids[i] = ng_nq_tpk[i][0].ids.data();
+        p_dists[i] = ng_nq_tpk[i][0].distances.data();
+        cur_max_estimate_value += ((*p_dists[i]) * (weight[i]));
+        auto cur_id = *p_ids[i];
+        t0 = std::chrono::high_resolution_clock::now();
+        auto target = hash_tbl.find(cur_id);
+        t1 = std::chrono::high_resolution_clock::now();
+        hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+        size_t pos;
+        if (target != hash_tbl.end()) {
+            pos = target->second;
+            nodes[pos].lb += (*p_dists[i] * (weight[i]));
+        } else {
+            pos = nodes.size();
+            t0 = std::chrono::high_resolution_clock::now();
+            hash_tbl[cur_id] = pos;
+            t1 = std::chrono::high_resolution_clock::now();
+            hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+            nodes.emplace_back(cur_id, (*p_dists[i] * (weight[i])), 0, false, num_group);
+        }
+        nodes[pos].group_flags[i] = true;
+        ++nodes[pos].occurs_time;
+    }
+    for (auto i = 0; i < nodes.size(); ++i) {
+        nodes[i].ub = cur_max_estimate_value;
+        t0 = std::chrono::high_resolution_clock::now();
+        result_set.emplace(i);
+        t1 = std::chrono::high_resolution_clock::now();
+        hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+        nodes[i].result_flag = true;
+        if (result_set.size() > TopK) {
+            nodes[result_set.top()].result_flag = false;
+            t0 = std::chrono::high_resolution_clock::now();
+            result_set.pop();
+            t1 = std::chrono::high_resolution_clock::now();
+            hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+        }
+    }
+    tl1 = std::chrono::high_resolution_clock::now();
+    round1_duration = std::chrono::duration_cast<std::chrono::microseconds>(tl1 - tl0).count();
+
+    size_t li = 1;
+    std::vector<int64_t> new_boy;
+    float max_unselected_ub = cur_max_estimate_value;
+    tl0 = std::chrono::high_resolution_clock::now();
+    for (; li < topk; ++li) {
+        cur_max_estimate_value = 0.0;
+        for (auto i = 0; i < num_group; ++i) {
+            auto cur_id = p_ids[i][li];
+            t0 = std::chrono::high_resolution_clock::now();
+            auto target = hash_tbl.find(cur_id);
+            t1 = std::chrono::high_resolution_clock::now();
+            hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+            cur_max_estimate_value += (p_dists[i][li] * weight[i]);
+            size_t pos;
+            if (target != hash_tbl.end()) {
+                pos = target->second;
+                nodes[pos].lb += (p_dists[i][li] * weight[i]);
+            } else {
+                pos = nodes.size();
+                new_boy.push_back(pos);
+                nodes.emplace_back(cur_id, (p_dists[i][li] * weight[i]), 0, false, num_group);
+                t0 = std::chrono::high_resolution_clock::now();
+                hash_tbl[cur_id] = pos;
+                t1 = std::chrono::high_resolution_clock::now();
+                hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+            }
+            // maintain TopK results
+            if (!nodes[pos].result_flag && nodes[pos].id > 0 && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
+                nodes[pos].result_flag = true;
+                t0 = std::chrono::high_resolution_clock::now();
+                result_set.push(pos);
+                t1 = std::chrono::high_resolution_clock::now();
+                hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+                if (result_set.size() > TopK) {
+                    nodes[result_set.top()].result_flag = false;
+                    t0 = std::chrono::high_resolution_clock::now();
+                    result_set.pop();
+                    t1 = std::chrono::high_resolution_clock::now();
+                    hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+                }
+            }
+            // maintain previous record ub
+            for (auto j = 0; j < nodes.size() - new_boy.size(); ++j) {
+                if (!nodes[j].group_flags[i]) {
+                    nodes[j].ub -= ((p_dists[i][li - 1] - p_dists[i][li]) * weight[i]);
+                }
+            }
+            nodes[pos].group_flags[i] = true;
+            ++nodes[pos].occurs_time;
+        }
+        for (auto &new_node_id :new_boy)
+            nodes[new_node_id].ub = cur_max_estimate_value;
+        new_boy.clear();
+
+        // find unselected upper bound value
+        max_unselected_ub = std::numeric_limits<float>::min();
+        bool find_flag = false;
+        for (auto &node: nodes) {
+            if (!node.result_flag) {
+                max_unselected_ub = std::max(max_unselected_ub, node.ub);
+                find_flag = true;
+            }
+        }
+        // set max_unselected ub as max value if all in topk
+        if (!find_flag)
+            max_unselected_ub = std::numeric_limits<float>::max();
+
+        // rerank topk
+        for (auto i = 0; i < result_set.size(); ++i) {
+            tmp_queue.push_back(result_set.top());
+            t0 = std::chrono::high_resolution_clock::now();
+            result_set.pop();
+            t1 = std::chrono::high_resolution_clock::now();
+            hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+        }
+        for (auto& i: tmp_queue) {
+            t0 = std::chrono::high_resolution_clock::now();
+            result_set.push(i);
+            t1 = std::chrono::high_resolution_clock::now();
+            hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+        }
+        std::vector<size_t>().swap(tmp_queue);
+
+        // judge exit condition
+        if (nodes[result_set.top()].lb >= max_unselected_ub) {
+            ret = true;
+            break;
+        }
+    }
+
+    std::cout << "loop i = " << li << std::endl;
+    tl1 = std::chrono::high_resolution_clock::now();
+    auto loop_duration = std::chrono::duration_cast<std::chrono::microseconds>(tl1 - tl0).count();
+    std::cout << "other loop costs: " << loop_duration << " ms." << std::endl;
+
+    // organize result set
+    t0 = std::chrono::high_resolution_clock::now();
+    auto tot_size = result_set.size();
+    result.ids.resize(tot_size);
+    result.distances.resize(tot_size);
+    while (!result_set.empty()) {
+        --tot_size;
+        result.ids[tot_size] = nodes[result_set.top()].id;
+        result.distances[tot_size] = nodes[result_set.top()].lb;
+        t0 = std::chrono::high_resolution_clock::now();
+        result_set.pop();
+        t1 = std::chrono::high_resolution_clock::now();
+        hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+    }
+    te = std::chrono::high_resolution_clock::now();
+    std::cout << "organize result set costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - t0).count() << " ms." << std::endl;
+    std::cout << "hash costs: " << hash_duration << " ms." << std::endl;
+    std::cout << "heap costs: " << heap_duration << " ms." << std::endl;
+    std::cout << "nra total costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - ts).count() << " ms." << std::endl;
     return ret;
 }
 
