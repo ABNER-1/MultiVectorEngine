@@ -2,13 +2,14 @@
 #include <iostream>
 #include <chrono>
 #include "utils.h"
+#include <omp.h>
 
 using namespace milvus::multivector;
 namespace {
-std::string ip = "192.168.1.147";
-//std::string ip = "127.0.0.1";
+//std::string ip = "192.168.1.147";
+std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection13";
+auto collection_name = "test_collection4";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;
@@ -89,16 +90,19 @@ void
 Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
        nlohmann::json& query_json, const std::string& result_file_name) {
     using namespace milvus::multivector;
-    milvus::TopKQueryResult topk_result;
+    milvus::TopKQueryResult topk_result(nq);
     auto ts = std::chrono::high_resolution_clock::now();
     if (strategy == "default") {
-        for (auto& query_entity : query_entities) {
+        #pragma omp parallel for
+        for (int i = 0 ; i< query_entities.size(); ++i) {
+            auto& query_entity = query_entities[i];
             std::vector<RowEntity> tmp_query_entities;
             milvus::TopKQueryResult tmp_topk_result;
             tmp_query_entities.emplace_back(query_entity);
             assert_status(engine->Search(collection_name, weight,
                                          tmp_query_entities, topk, query_json, tmp_topk_result));
-            topk_result.emplace_back(tmp_topk_result[0]);
+            topk_result[i].distances.swap(tmp_topk_result[0].distances);
+            topk_result[i].ids.swap(tmp_topk_result[0].ids);
         }
     } else {
         assert_status(engine->Search(collection_name, weight,

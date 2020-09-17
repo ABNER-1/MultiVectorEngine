@@ -121,11 +121,12 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
     }
     auto ns = std::chrono::high_resolution_clock::now();
     Status stat =
-        NoRandomAccessAlgorithmIP(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError,
-                                                                                             "recall failed!");
+        NoRandomAccessAlgorithmIP(tqrs, query_results, weight, topk) ? Status::OK()
+                                                                     : Status(StatusCode::UnknownError,
+                                                                              "recall failed!");
     auto es = std::chrono::high_resolution_clock::now();
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(es - ns).count();
-    //std::cerr << search_duration << "; " << nra_time << std::endl;
+//    std::cerr << search_duration << "; " << nra_time << std::endl;
     return stat;
 }
 
@@ -136,11 +137,11 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 500l);
-        threshold = 16384;
+        tpk = std::max(topk, 900l);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk * 3);
@@ -155,7 +156,6 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
         } while (!succ_flag && tpk < threshold);
         topks.push_back(tpk);
     }
-
     return Status::OK();
 }
 
