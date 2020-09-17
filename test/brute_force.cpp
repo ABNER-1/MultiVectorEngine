@@ -235,7 +235,11 @@ void show_config() {
     for (auto i = 0; i < vec_groups; ++ i) {
         std::cout << "data" << i << "_locations: " << base_data_locations[i] << ", dim: " << dimensions[i] << ", weitht: " << weights[i] << std::endl;
     }
-    std::cout << "query data location: " << query_data_location << std::endl;
+    std::cout << "query data info: " << std::endl;
+    for (auto i = 0; i < vec_groups; ++ i) {
+        std::cout << "query" << i << "_locations: " << query_data_locations[i] << ", dim: " << dimensions[i] << ", weitht: " << weights[i] << std::endl;
+    }
+//    std::cout << "query data location: " << query_data_location << std::endl;
     std::cout << "whether use base data as query: " << (use_base_query ? "true" : "false") << std::endl;
     std::cout << "acc_dims: " << std::endl;
     for (auto &d : acc_dims)
@@ -301,7 +305,7 @@ int main(int argc, char **argv) {
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Search costs " << search_duration << " ms." << std::endl;
 
-//    show_result(result);
+    show_result(result);
     std::string baseline_file = config.at("baseline_result");
     writeBenchmarkResult(result, baseline_file, search_duration, topk);
 

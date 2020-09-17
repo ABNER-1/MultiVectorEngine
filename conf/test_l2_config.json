@@ -21,5 +21,8 @@
   "topk": 10,
   "precision": 7,
   "metric_type": "L2",
+  "ivf_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/ivfflat/result",
+  "hnsw_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/hnsw/result",
+  "baseline_result": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline.txt",
   "use_base_query": false
 }

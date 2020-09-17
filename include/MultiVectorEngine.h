@@ -88,6 +88,7 @@ class MultiVectorEngine : public BaseEngine {
     // collections.second is the child collection(s) list
     std::unordered_map<std::string, MultiVectorCollectionPtr> collections_;
 };
+using MultiVectorEnginePtr = std::shared_ptr<MultiVectorEngine>;
 
 } // namespace multivector
 } // namespace milvus

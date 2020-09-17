@@ -523,7 +523,8 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               nlohmann::json& query_json,
               const nlohmann::json& config,
               milvus::MetricType metric_type,
-              const std::string& collection_name) {
+              const std::string& collection_name,
+              const std::string& result_file) {
     using namespace milvus::multivector;
     auto assert_status = [](milvus::Status status) {
         if (!status.ok()) {
@@ -583,7 +584,8 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     te = std::chrono::high_resolution_clock::now();
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Search costs " << search_duration << " ms." << std::endl;
-    showResultL2(topk_result);
+    writeBenchmarkResult(topk_result, result_file, search_duration, topk);
+//    showResultL2(topk_result);
 
     assert_status(engine->DropIndex(collection_name));
 }
