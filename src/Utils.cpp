@@ -439,6 +439,8 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
     }
+
+    // todo: can be parallel with omp
     for (auto line = 0; line < topk; ++line) {
         cur_max_estimate_value = 0.0;
         for (auto i = 0; i < num_group; ++i) {
