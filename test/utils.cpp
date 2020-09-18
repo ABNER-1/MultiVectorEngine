@@ -127,10 +127,12 @@ writeBenchmarkResult(const milvus::TopKQueryResult& topk_query_result,
     std::cout << "There are " << topk_query_result.size() << " query" << std::endl;
     std::ofstream out(result_file);
     out.precision(18);
-    out << topk_query_result.size() << " " << topk_query_result[0].ids.size()
+//    out << topk_query_result.size() << " " << topk_query_result[0].ids.size()
+//        << " " << total_time << std::endl;
+    out << topk_query_result.size() << " " << 50
         << " " << total_time << std::endl;
     for (auto& result : topk_query_result) {
-        for (int i = 0; i < topk; ++i) {
+        for (int i = 0; i < topk && i < 50; ++i) {
             if (i > topk_query_result.size())out << -1 << std::endl;
             out << result.ids[i] << " " << result.distances[i] << std::endl;
         }

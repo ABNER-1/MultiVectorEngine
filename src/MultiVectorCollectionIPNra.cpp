@@ -126,7 +126,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
                                                                               "recall failed!");
     auto es = std::chrono::high_resolution_clock::now();
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(es - ns).count();
-//    std::cerr << search_duration << "; " << nra_time << std::endl;
+    std::cerr << search_duration << "; " << nra_time << std::endl;
     return stat;
 }
 
@@ -137,14 +137,14 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 900l);
+        tpk = std::max(topk, 150l);
         threshold = 2048;
         bool succ_flag = false;
         do {
-            tpk = std::min(threshold, tpk * 3);
+            tpk = std::min(threshold, tpk + 10);
             if (extra_params.contains("ef")
                 && extra_params["ef"] < tpk) {
                 extra_params["ef"] = tpk;
@@ -157,6 +157,82 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
         topks.push_back(tpk);
     }
     return Status::OK();
+}
+
+Status
+MultiVectorCollectionIPNra::BatchSearch(const std::vector<float>& weight,
+                                        const std::vector<RowEntity>& entity_array,
+                                        int64_t topk, nlohmann::json& extra_params,
+                                        milvus::TopKQueryResult& topk_query_results) {
+    auto calc_next_topk = [](int64_t topk) {
+        return 2048;
+    };
+    auto convert_entity = [](std::vector<RowEntity> entity_array) {
+        auto nq = entity_array.size();
+        auto group_num = entity_array[0].size();
+        std::vector<RowEntity> converted_entity_array(group_num, RowEntity(nq));
+        for (int i = 0; i < nq; ++i) {
+            for (int j = 0; j < group_num; ++j) {
+                converted_entity_array[j][i].float_data.swap(entity_array[i][j].float_data);
+            }
+        }
+        return std::move(converted_entity_array);
+    };
+    topk_query_results.resize(entity_array.size());
+    auto converted_entity_array = convert_entity(entity_array);
+
+    while (true) {
+        auto tmp_topk = calc_next_topk(topk);
+        auto tmp_nq = converted_entity_array[0].size();
+        TopKQueryResult tmp_topk_results;
+        std::vector<bool> success_flag;
+        if (extra_params.contains("ef")
+            && extra_params["ef"] < tmp_topk) {
+            extra_params["ef"] = tmp_topk;
+        }
+        BatchSearchImpl(weight, converted_entity_array, topk, tmp_topk,
+                        extra_params, tmp_topk_results, success_flag);
+        #pragma omp parallel for
+        for (int i = 0; i < tmp_nq; ++i) {
+            topk_query_results[i].ids.swap(tmp_topk_results[i].ids);
+            topk_query_results[i].distances.swap(tmp_topk_results[i].distances);
+        }
+        break;
+    }
+    return Status::OK();
+}
+
+// converted_entity_array [group num][nq][vector]
+Status
+MultiVectorCollectionIPNra::BatchSearchImpl(const std::vector<float>& weight,
+                                            std::vector<RowEntity>& converted_entity_array,
+                                            int64_t topk, int64_t tmp_topk,
+                                            nlohmann::json& extra_params, TopKQueryResult& topk_query_results,
+                                            std::vector<bool> success_flags) {
+    std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
+    auto nq = converted_entity_array[0].size();
+    success_flags.resize(nq);
+    topk_query_results.reserve(nq);
+    auto search_start = std::chrono::high_resolution_clock::now();
+    for (auto i = 0; i < child_collection_names_.size(); ++i) {
+        auto status = conn_ptr_->Search(child_collection_names_[i], {},
+                                        converted_entity_array[i], tmp_topk, extra_params, tqrs[i]);
+        if (!status.ok()) return status;
+    }
+    auto search_end = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(search_end - search_start).count();
+
+    auto nra_start = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for
+    for (int j = 0; j < nq; ++j) {
+        bool success_flag = NoRandomAccessAlgorithmIP(tqrs, topk_query_results[j], weight, topk);
+        success_flags[j] = success_flag;
+    }
+    auto nra_end = std::chrono::high_resolution_clock::now();
+    auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(nra_end - nra_start).count();
+    std::cerr << search_duration << "; " << nra_time << std::endl;
+    return Status::OK();
+
 }
 
 void

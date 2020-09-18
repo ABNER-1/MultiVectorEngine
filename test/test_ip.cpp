@@ -9,7 +9,7 @@ namespace {
 //std::string ip = "192.168.1.147";
 std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection4";
+auto collection_name = "test_collection3";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;
@@ -94,7 +94,7 @@ Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
     auto ts = std::chrono::high_resolution_clock::now();
     if (strategy == "default") {
         #pragma omp parallel for
-        for (int i = 0 ; i< query_entities.size(); ++i) {
+        for (int i = 0; i < query_entities.size(); ++i) {
             auto& query_entity = query_entities[i];
             std::vector<RowEntity> tmp_query_entities;
             milvus::TopKQueryResult tmp_topk_result;
@@ -151,14 +151,16 @@ main(int argc, char** argv) {
     Insert(engine);
     ivf_result_prefix = ip_config.at("ivf_result_prefix");
     hnsw_result_prefix = ip_config.at("hnsw_result_prefix");
+//    std::vector<int> nlists = {4096, 16384};
     std::vector<int> nlists = {4096};
-    std::vector<int> nprobes =
-        {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
+    std::vector<int> nprobes ={1, 2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
+//        {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096, 8192, 16384};
 
-    int number = 0;
+    int number = 30;
     for (auto nlist : nlists) {
         CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
         for (auto nprobe : nprobes) {
+            if (nprobe > nlist) continue;
             std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
             auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
             nlohmann::json search_params = {{"nprobe", nprobe}};
@@ -169,12 +171,12 @@ main(int argc, char** argv) {
         DropIndex(engine);
     }
 
-//    std::vector<int> ms = {4, 8, 16, 48};
-//    std::vector<int> efcs = {8, 9, 12, 16, 32, 100, 512};
-    std::vector<int> ms = {4, 8};
-    std::vector<int> efcs = {8, 9, 10, 16, 32};
-    std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 4096};
-    number = 0;
+    std::vector<int> ms = {4, 8, 16};
+    std::vector<int> efcs = {8, 9, 12, 32, 100};
+//    std::vector<int> ms = {4, 8, 16, 32, 48};
+//    std::vector<int> efcs = {8, 9, 10, 16, 32, 100, 200, 300, 400, 512};
+    std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 3080, 4000, 4096};
+    number = 100;
     for (auto m : ms) {
         for (auto& efc: efcs) {
             CreateIndex(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}});

@@ -1,0 +1,26 @@
+{
+  "group_num": 1,
+  "base_data_locations": [
+    "/home/abner/recipe1M_model_all/results_train/data_img.txt"
+  ],
+  "query_data_locations": [
+    "/home/abner/recipe1M_model_all/results_test/data_img.txt"
+  ],
+  "dimensions": [
+    1024
+  ],
+  "weights": [
+    1
+  ],
+  "batch": 10000,
+  "nq": 100,
+  "topk": 50,
+  "nb": 238459,
+  "precision": 18,
+  "metric_type": "IP",
+  "strategy": "default",
+  "ivf_result_prefix": "./ip-recipe/ivf6/ip_result",
+  "hnsw_result_prefix": "./ip-recipe/hnsw6/ip_result",
+  "baseline_result": "./ip-recipe/baseline1.txt",
+  "use_base_query": false
+}

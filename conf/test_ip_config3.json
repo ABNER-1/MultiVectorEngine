@@ -13,18 +13,18 @@
     1024
   ],
   "weights": [
-    0.5,
-    0.5
+    1,
+    1
   ],
   "batch": 10000,
   "nq": 100,
-  "topk": 50,
+  "topk": 2048,
   "nb": 238459,
   "precision": 18,
   "metric_type": "IP",
-  "strategy": "nra",
-  "ivf_result_prefix": "./ip-recipe/nra-ivf6/ip_result",
-  "hnsw_result_prefix": "./ip-recipe/nra-hnsw6/ip_result",
+  "strategy": "default",
+  "ivf_result_prefix": "./ip-recipe/ivf5/ip_result",
+  "hnsw_result_prefix": "./ip-recipe/hnsw5/ip_result",
   "baseline_result": "./ip-recipe/baseline.txt",
   "use_base_query": false
 }

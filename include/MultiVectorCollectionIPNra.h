@@ -40,10 +40,15 @@ class MultiVectorCollectionIPNra : public MultiVectorCollection {
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
 
-    virtual void
+    void
     GetRowEntityByID(const std::vector<int64_t>& id_arrays,
-                    std::vector<RowEntity>& row_entities) override;
+                     std::vector<RowEntity>& row_entities) override;
 
+    Status
+    BatchSearch(const std::vector<float>& weight,
+                const std::vector<RowEntity>& entity_array,
+                int64_t topk, nlohmann::json& extra_params,
+                milvus::TopKQueryResult& topk_query_results);
  private:
     Status
     SearchImpl(const std::vector<float>& weight,
@@ -51,6 +56,13 @@ class MultiVectorCollectionIPNra : public MultiVectorCollection {
                int64_t topk, const std::string& extra_params,
                QueryResult& query_results,
                int64_t tpk);
+
+    Status
+    BatchSearchImpl(const std::vector<float>& weight,
+                    std::vector<RowEntity>& converted_entity_array,
+                    int64_t topk, int64_t tmp_topk,
+                    nlohmann::json& extra_params, TopKQueryResult& topk_query_results,
+                    std::vector<bool> success_flags);
 };
 
 using MultiVectorCollectionIPNraPtr = std::shared_ptr<MultiVectorCollectionIPNra>;
