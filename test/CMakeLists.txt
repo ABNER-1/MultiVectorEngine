@@ -9,17 +9,6 @@ target_link_libraries(test_ip
         hdf5_cpp
         pthread)
 
-
-add_executable(test_ip_nra test_ip_nra.cpp utils.cpp)
-
-target_link_libraries(test_ip_nra
-        multi_vector
-        milvus_sdk
-        hdf5_serial
-        hdf5_cpp
-        pthread)
-
-
 add_executable(test_nra test_nra.cpp)
 
 target_link_libraries(test_nra

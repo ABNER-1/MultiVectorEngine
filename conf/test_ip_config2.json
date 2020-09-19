@@ -23,8 +23,8 @@
   "precision": 18,
   "metric_type": "IP",
   "strategy": "default",
-  "ivf_result_prefix": "./ip2/ivf/ip_result",
-  "hnsw_result_prefix": "./ip2/hnsw/ip_result",
-  "baseline_result": "./ip/baseline.txt",
+  "ivf_result_prefix": "./ip-recipe/ivf1/ip_result",
+  "hnsw_result_prefix": "./ip-recipe/hnsw1/ip_result",
+  "baseline_result": "./ip-recipe/baseline.txt",
   "use_base_query": false
 }

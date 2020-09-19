@@ -121,12 +121,21 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
     }
     auto ns = std::chrono::high_resolution_clock::now();
     Status stat =
-        NoRandomAccessAlgorithmIP(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError,
-                                                                                             "recall failed!");
+        NoRandomAccessAlgorithmIP(tqrs, query_results, weight, topk) ? Status::OK()
+                                                                     : Status(StatusCode::UnknownError,
+                                                                              "recall failed!");
     auto es = std::chrono::high_resolution_clock::now();
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(es - ns).count();
-    //std::cerr << search_duration << "; " << nra_time << std::endl;
+//    std::cerr << search_duration << "; " << nra_time << std::endl;
     return stat;
+}
+
+Status
+MultiVectorCollectionIPNra::SearchBatch(const std::vector<float>& weight,
+                                   const std::vector<RowEntity>& entity_array,
+                                   int64_t topk, nlohmann::json& extra_params,
+                                   milvus::TopKQueryResult& topk_query_results) {
+    std::cout << "not implement yet!" << std::endl;
 }
 
 Status
@@ -138,9 +147,8 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
     topks.clear();
     #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
-//        std::cout<<q<<std::endl;
         int64_t threshold, tpk;
-        tpk = std::max(topk, 2048l);
+        tpk = std::max(topk, 900l);
         threshold = 2048;
         bool succ_flag = false;
         do {
@@ -156,8 +164,20 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
         } while (!succ_flag && tpk < threshold);
         topks.push_back(tpk);
     }
-
     return Status::OK();
+}
+
+void
+MultiVectorCollectionIPNra::GetRowEntityByID(const std::vector<int64_t>& id_arrays,
+                                             std::vector<RowEntity>& row_entities) {
+    for (auto i = 0; i < child_collection_names_.size(); ++i) {
+        auto& collection = child_collection_names_[i];
+        std::vector<Entity> entities_data;
+        conn_ptr_->GetEntityByID(collection, id_arrays, entities_data);
+        for (auto j = 0; j < entities_data.size(); ++j) {
+            row_entities[j][i].float_data.swap(entities_data[j].float_data);
+        }
+    }
 }
 
 } // namespace multivector

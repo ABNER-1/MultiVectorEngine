@@ -1,3 +1,4 @@
+#include <chrono>
 #include <nlohmann/json.hpp>
 #include "Utils.h"
 #include <omp.h>
@@ -104,7 +105,8 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     int64_t topk,
                                     const std::string& extra_params,
                                     QueryResult &query_results,
-                                    int64_t tpk) {
+                                    int64_t tpk,
+                                    size_t qid) {
 
     std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
 //    std::vector<TopKQueryResult> tqrs;
@@ -129,7 +131,8 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         }
     }
 //    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
-    Status stat = ONRAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+//    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     return stat;
 }
 
@@ -139,12 +142,12 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 int64_t topk, nlohmann::json &extra_params,
                                 milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
-    topks.clear();
+    std::vector<int>().swap(topks);
     #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 200);
-        threshold = 16384;
+        tpk = std::max(int(topk), 1024);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
@@ -154,7 +157,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
             }
             topk_query_results[q].ids.clear();
             topk_query_results[q].distances.clear();
-            auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
+            auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk, 0);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
         topks.push_back(tpk);
@@ -163,6 +166,56 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
 //        else
 //            std::cout << "the " << q + 1 << "th query recall failed! tpk = " << tpk << std::endl;
     }
+
+    return Status::OK();
+}
+
+Status
+MultiVectorCollectionL2::SearchBatch(const std::vector<float> &weight,
+                                const std::vector<RowEntity> &entity_array,
+                                int64_t topk, nlohmann::json &extra_params,
+                                milvus::TopKQueryResult &topk_query_results) {
+    topk_query_results.resize(entity_array[0].size());
+    std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
+    std::chrono::high_resolution_clock::time_point ts, te;
+    topks.clear();
+    ts = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for
+    for (auto i = 0; i < entity_array.size(); ++ i) {
+        int64_t thres = 4096;
+        if (extra_params.contains("ef")) {
+                if (extra_params["ef"] < thres)
+                    extra_params["ef"] = thres;
+        }
+        auto status = conn_ptr_->Search(child_collection_names_[i], {}, entity_array[i], thres, extra_params.dump(), tqrs[i]);
+        if (!status.ok()) {
+            std::cout << status.message();
+        }
+    }
+    te = std::chrono::high_resolution_clock::now();
+    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "milvus batch search costs " << search_duration << " ms." << std::endl;
+
+    ts = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for
+    for (auto i = 0; i < entity_array[0].size(); ++ i) {
+        topk_query_results[i].ids.clear();
+        topk_query_results[i].distances.clear();
+        auto max_size = tqrs[0][i].ids.size();
+        for (auto j = 1; j < child_collection_names_.size(); ++ j)
+            max_size = std::max(max_size, tqrs[j][i].ids.size());
+        for (auto j = 0; j < child_collection_names_.size(); ++ j) {
+            if (tqrs[j][i].ids.size() < max_size) {
+                tqrs[j][i].ids.resize(max_size, -1);
+                tqrs[j][i].distances.resize(max_size, std::numeric_limits<float>::max());
+            }
+        }
+        Status stat = ONRAL2(tqrs, topk_query_results[i], weight, topk, i) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+        topks.push_back(4096);
+    }
+    te = std::chrono::high_resolution_clock::now();
+    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+    std::cout << "nq nra costs " << search_duration << " ms." << std::endl;
 
     return Status::OK();
 }

@@ -27,8 +27,8 @@
   "precision": 18,
   "metric_type": "IP",
   "strategy": "default",
-  "ivf_result_prefix": "./ip1/ivf/ip_result",
-  "hnsw_result_prefix": "./ip1/hnsw/ip_result",
-  "baseline_result": "./ip1/baseline.txt",
+  "ivf_result_prefix": "./ip-glove/ivf/ip_result",
+  "hnsw_result_prefix": "./ip-glove/hnsw/ip_result",
+  "baseline_result": "./ip-glove/baseline.txt",
   "use_base_query": false
 }

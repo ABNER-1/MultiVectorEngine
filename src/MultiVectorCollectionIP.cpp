@@ -98,6 +98,14 @@ MultiVectorCollectionIP::Search(const std::vector<float>& weight,
 }
 
 Status
+MultiVectorCollectionIP::SearchBatch(const std::vector<float>& weight,
+                                const std::vector<RowEntity>& entity_array,
+                                int64_t topk, nlohmann::json& extra_params,
+                                milvus::TopKQueryResult& topk_query_results) {
+    std::cout << "not implement yet!" << std::endl;
+}
+
+Status
 MultiVectorCollectionIP::mergeRowEntityFromEntites(const std::vector<RowEntity>& entity_arrays,
                                                    std::vector<milvus::Entity>& new_entities) {
 

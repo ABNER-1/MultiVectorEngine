@@ -41,7 +41,13 @@ bool NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult> &ng_nq
 bool ONRAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                                milvus::QueryResult &result,
                                const std::vector<float>& weight,
-                               int64_t TopK);
+                               int64_t TopK,
+                               size_t qid);
+
+bool TAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
+            milvus::QueryResult &result,
+            const std::vector<float>& weight,
+            int64_t TopK);
 
 bool NoRandomAccessAlgorithm(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                              milvus::QueryResult &result,

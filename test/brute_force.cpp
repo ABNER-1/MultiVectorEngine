@@ -67,7 +67,6 @@ struct Compare {
 void Read(std::vector<milvus::multivector::RowEntity> &raw_data, std::ifstream &f, size_t thread_num, size_t read_rows) {
 //    std::cout.precision(8);
     f.precision(precision);
-//#pragma omp parallel for
     for (auto i = 0; i < read_rows; ++ i) {
         raw_data[thread_num][i].float_data.resize(dimensions[thread_num]);
         for (auto j = 0; j < dimensions[thread_num]; ++ j) {
