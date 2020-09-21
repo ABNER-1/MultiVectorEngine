@@ -146,8 +146,8 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 16384);
-        threshold = 16384;
+        tpk = std::max(int(topk), 2048);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
