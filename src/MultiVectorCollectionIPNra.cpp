@@ -145,7 +145,7 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
         tpk = std::max(topk, 900l);
@@ -153,9 +153,9 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk * 3);
-            if (extra_params.contains("ef")) {
-                if (extra_params["ef"] < tpk)
-                    extra_params["ef"] = tpk;
+            if (extra_params.contains("ef")
+                && extra_params["ef"] < tpk) {
+                extra_params["ef"] = tpk;
             }
             topk_query_results[q].ids.clear();
             topk_query_results[q].distances.clear();

@@ -314,7 +314,8 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
                 pos = nodes.size();
                 new_boy.push_back(pos);
                 nodes.emplace_back(cur_id, 0, 0, false, num_group);
-                hash_tbl[cur_id] = pos;
+//                hash_tbl[cur_id] = pos;
+                hash_tbl.emplace(cur_id, pos);
             }
             nodes[pos].lb += (p_dists[i][li] * weight[i]);
             nodes[pos].group_flags[i] = true;
@@ -584,6 +585,8 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
     }
+
+    // todo: can be parallel with omp
     for (auto line = 0; line < topk; ++line) {
         cur_max_estimate_value = 0.0;
         for (auto i = 0; i < num_group; ++i) {

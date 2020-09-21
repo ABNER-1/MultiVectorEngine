@@ -142,12 +142,12 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 int64_t topk, nlohmann::json &extra_params,
                                 milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
-    std::vector<int>().swap(topks);
+    topks.clear();
     #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 1024);
-        threshold = 2048;
+        tpk = std::max(int(topk), 16384);
+        threshold = 16384;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
@@ -160,7 +160,7 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk, 0);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
-        topks.push_back(tpk);
+        topks.push_back((int)(tpk));
 //        if (succ_flag)
 //            std::cout << "the " << q + 1 << "th query recall succ! tpk = " << tpk << std::endl;
 //        else
