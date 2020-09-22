@@ -136,13 +136,14 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
     }
     if (save_) {
         std::cout << "save milvus results..." << std::endl;
-        std::ofstream fout("/tmp/cmp/milvus_l2_hnsw_16_100_4096.txt", std::ios::app);
-        fout << "the " << ++ cnt << "th query, milvus returns:" << std::endl;
-        fout.precision(6);
+        std::ofstream fout("/tmp/cmp/milvus_l2_hnsw_16_100_4096_id_only.txt", std::ios::app);
+//        fout << "the " << ++ cnt << "th query, milvus returns:" << std::endl;
+//        fout.precision(6);
         for (auto i = 0; i < child_collection_names_.size(); ++ i) {
-            fout << "the " << i + 1 << "th group:" << std::endl;
+//            fout << "the " << i + 1 << "th group:" << std::endl;
             for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
-                fout << "(" << tqrs[i][0].ids[j] << ", " << tqrs[i][0].distances[j] << ") ";
+//                fout << "(" << tqrs[i][0].ids[j] << ", " << tqrs[i][0].distances[j] << ") ";
+                fout << tqrs[i][0].ids[j] << " ";
             }
             fout << std::endl;
         }
@@ -151,6 +152,15 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
 //    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
 //    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    if (save_) {
+        std::cout << "save nra results..." << std::endl;
+        std::ofstream fout("/tmp/cmp/nra_l2_hnsw_16_100_4096_id_only.txt", std::ios::app);
+        for (auto i = 0; i < query_results.ids.size(); ++ i) {
+            fout << query_results.ids[i] << " ";
+        }
+        fout << std::endl;
+        fout.close();
+    }
     return stat;
 }
 
