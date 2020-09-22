@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "Utils.h"
 #include <omp.h>
+#include <fstream>
 #include "MultiVectorCollectionL2.h"
 
 
@@ -108,6 +109,7 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     int64_t tpk,
                                     size_t qid) {
 
+    static int cnt = 0;
     std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
 //    std::vector<TopKQueryResult> tqrs;
 //    tqrs.resize(child_collection_names_.size());
@@ -130,6 +132,19 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
             tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
         }
     }
+    /*
+    std::ofstream fout("/tmp/cmp/milvus_l2_output.txt", std::ios::app);
+    fout << "the " << ++ cnt << "th query, milvus returns:" << std::endl;
+    fout.precision(6);
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        fout << "the " << i + 1 << "th group:" << std::endl;
+        for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
+            fout << "(" << tqrs[i][0].ids[j] << ", " << tqrs[i][0].distances[j] << ") ";
+        }
+        fout << std::endl;
+    }
+    fout.close();
+    */
 //    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
 //    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
@@ -142,12 +157,13 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
                                 int64_t topk, nlohmann::json &extra_params,
                                 milvus::TopKQueryResult &topk_query_results) {
     topk_query_results.resize(entity_array.size());
+//    std::cout << "nq = " << entity_array.size() << std::endl;
     topks.clear();
-    #pragma omp parallel for
+#pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 2048);
-        threshold = 2048;
+        tpk = std::max(int(topk), 4096);
+        threshold = 8192;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);

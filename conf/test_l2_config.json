@@ -13,16 +13,16 @@
     1024
   ],
   "weights": [
-    0.7,
-    0.3
+    0.5,
+    0.5
   ],
   "nb": 238459,
   "nq": 100,
   "topk": 50,
   "precision": 18,
   "metric_type": "L2",
-  "ivf_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/ivfflat/weight73/2048_2048/result",
-  "hnsw_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/hnsw/weight73/2048_2048/result",
+  "ivf_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/ivfflat/weight55/8192_8192/result",
+  "hnsw_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/hnsw/weight55/8192_8192/result",
   "baseline_result": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline.txt",
   "use_base_query": false
 }
