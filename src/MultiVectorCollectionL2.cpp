@@ -100,6 +100,8 @@ MultiVectorCollectionL2::Flush() {
     */
 }
 
+bool save_ = false;
+
 Status
 MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     const std::vector<milvus::Entity>& entity_query,
@@ -132,19 +134,20 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
             tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
         }
     }
-    /*
-    std::ofstream fout("/tmp/cmp/milvus_l2_output.txt", std::ios::app);
-    fout << "the " << ++ cnt << "th query, milvus returns:" << std::endl;
-    fout.precision(6);
-    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
-        fout << "the " << i + 1 << "th group:" << std::endl;
-        for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
-            fout << "(" << tqrs[i][0].ids[j] << ", " << tqrs[i][0].distances[j] << ") ";
+    if (save_) {
+        std::cout << "save milvus results..." << std::endl;
+        std::ofstream fout("/tmp/cmp/milvus_l2_hnsw_16_100_4096.txt", std::ios::app);
+        fout << "the " << ++ cnt << "th query, milvus returns:" << std::endl;
+        fout.precision(6);
+        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+            fout << "the " << i + 1 << "th group:" << std::endl;
+            for (auto j = 0; j < tqrs[i][0].ids.size(); ++ j) {
+                fout << "(" << tqrs[i][0].ids[j] << ", " << tqrs[i][0].distances[j] << ") ";
+            }
+            fout << std::endl;
         }
-        fout << std::endl;
+        fout.close();
     }
-    fout.close();
-    */
 //    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
 //    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
@@ -159,11 +162,13 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     topk_query_results.resize(entity_array.size());
 //    std::cout << "nq = " << entity_array.size() << std::endl;
     topks.clear();
-#pragma omp parallel for
+    if (extra_params.contains("print_milvus"))
+        save_ = extra_params["print_milvus"];
+//#pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 4096);
-        threshold = 8192;
+        tpk = std::max(int(topk), 2048);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);

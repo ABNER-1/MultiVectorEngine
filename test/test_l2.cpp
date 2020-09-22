@@ -103,8 +103,9 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
 
 void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("ivf_result_prefix");
-    std::vector<int> nlists = {128, 512, 1024, 2048};
-    std::vector<int> nprobes = {1, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+//    std::vector<int> nlists = {128, 512, 1024, 2048};
+    std::vector<int> nlists = {4096};
+    std::vector<int> nprobes = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
     int cnt = 0;
     for (auto &nlist : nlists) {
         std::cout << "build index nlist = " << nlist << std::endl;
@@ -116,9 +117,13 @@ void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::stri
 
 void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("hnsw_result_prefix");
-    std::vector<int> ms = {4, 8, 12, 16, 24};
-    std::vector<int> efcs = {8, 16, 24, 32, 64, 128, 256, 400};
-    std::vector<int> efss = {50, 100, 200, 300, 400};
+//    std::vector<int> ms = {4, 8, 12, 16, 24};
+    std::vector<int> ms = {16};
+//    std::vector<int> efcs = {8, 16, 24, 32, 64, 128, 256, 400};
+    std::vector<int> efcs = {100};
+//    std::vector<int> efss = {50, 100, 200, 300, 400};
+//    std::vector<int> efss = {2048, 3080, 4000, 4096};
+    std::vector<int> efss = {4096};
     int cnt = 0;
     for (auto &m : ms) {
         for (auto &efc: efcs) {
@@ -148,7 +153,7 @@ main(int argc, char **argv) {
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
 
     auto collection_name = CreateCollection(config, engine);
-    TestIVFFLAT(config, engine, collection_name);
+//    TestIVFFLAT(config, engine, collection_name);
     TestHNSW(config, engine, collection_name);
 
     assert_status(engine->DropCollection(collection_name));
