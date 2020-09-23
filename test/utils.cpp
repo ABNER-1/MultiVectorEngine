@@ -3,8 +3,8 @@
 #include "utils.h"
 //#include <hdf5/serial/hdf5.h>
 //#include <hdf5/serial/H5Cpp.h>
-#include <hdf5.h>
-#include <H5Cpp.h>
+//#include <hdf5.h>
+//#include <H5Cpp.h>
 
 void
 normalizeVector(milvus::Entity& entity) {
@@ -54,17 +54,6 @@ readArrays(const std::string& file_name, const std::vector<int64_t>& dimensions,
     std::vector<std::vector<float>> data;
     unsigned num, dim;
     loadDataFromFvec(file_name, data, num, dim, page_num, page);
-    split_data(data, row_entities, dimensions);
-    return row_entities.size();
-}
-
-int
-readArraysFromHdf5(const std::string& file_name, const std::vector<int64_t>& dimensions,
-                   std::vector<milvus::multivector::RowEntity>& row_entities,
-                   int page_num, int page, const std::string& data_name) {
-    std::vector<std::vector<float>> data;
-    unsigned num, dim;
-    loadDataFromHdf5(file_name, data, num, dim, page_num, page, data_name);
     split_data(data, row_entities, dimensions);
     return row_entities.size();
 }
@@ -236,43 +225,6 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 }
 
 void
-loadDataFromHdf5(const std::string& filename, std::vector<std::vector<float>>& vector_data,
-                 unsigned& num, unsigned& dim, int page_num, int page,
-                 const std::string& data_name) {
-    using namespace H5;
-    H5File file(filename, H5F_ACC_RDONLY);
-    DataSet dataset = file.openDataSet(data_name);
-    DataSpace dataspace = dataset.getSpace();
-    hsize_t dims_out[2];
-    int rank = dataspace.getSimpleExtentDims(dims_out);
-    num = dims_out[0];
-    dim = dims_out[1];
-
-//    read a page once
-    hsize_t dimsm[2] = {static_cast<hsize_t>(page_num), dim};
-    DataSpace memspace(rank, dimsm);
-    float data[10000][200];
-
-    int read_length = num - page_num * page;
-    read_length = std::min(page_num, read_length);
-    if (read_length <= 0) return;
-    hsize_t offset[2]{static_cast<hsize_t>(page_num * page), 0};
-    hsize_t count[2]{static_cast<hsize_t>(read_length), dimsm[1]};
-    dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
-
-    hsize_t offset_out[2]{0, 0};
-    memspace.selectHyperslab(H5S_SELECT_SET, count, offset_out);
-    dataset.read(data, PredType::NATIVE_FLOAT, memspace, dataspace);
-
-    vector_data.resize(read_length, std::vector<float>(dim));
-    for (int i = 0; i < read_length; ++i) {
-        for (int j = 0; j < dim; ++j) {
-            vector_data[i][j] = data[i][j];
-        }
-    }
-}
-
-void
 loadDataFromFvec(const std::string& filename,
                  std::vector<std::vector<float>>& vector_data,
                  unsigned& num, unsigned& dim, int page_num, int page) {
@@ -357,25 +309,6 @@ split_data(const std::vector<std::vector<float>>& raw_data,
             idx += dims[j];
         }
     }
-}
-
-void
-compareResultWithH5(const milvus::TopKQueryResult& topk_query_result,
-                    const std::string& h5_file_name) {
-    std::vector<std::vector<float>> distances, neighbors;
-    unsigned num, dim;
-    loadDataFromHdf5(h5_file_name, distances, num, dim, 10000, 0, "distances");
-    loadDataFromHdf5(h5_file_name, neighbors, num, dim, 10000, 0, "neighbors");
-    for (int i = 0; i < topk_query_result.size(); ++i) {
-        auto& result = topk_query_result[i];
-        for (int j = 0; j < result.ids.size(); ++j) {
-            //compare result.ids[j] == neighbors[i][j]
-            if (result.ids[j] == neighbors[i][j]) {
-                std::cout << "  " << result.distances[j] << " " << distances[i][j] << std::endl;
-            }
-        }
-    }
-
 }
 
 void
