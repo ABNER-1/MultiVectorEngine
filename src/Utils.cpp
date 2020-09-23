@@ -326,7 +326,7 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         nodes[i].ub = nodes[i].lb;
         for (auto j = 0; j < num_group; ++ j) {
             if (!nodes[i].group_flags[j])
-                nodes[i].ub += p_dists[j][ub_id] * weight[j];
+                t diff nodes[i].ub += p_dists[j][ub_id] * weight[j] + weight[j];
         }
         if (result_set.size() < TopK || nodes[result_set.top()].ub > nodes[i].ub) {
             result_set.emplace(i);

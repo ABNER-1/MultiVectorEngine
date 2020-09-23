@@ -21,8 +21,8 @@
   "topk": 50,
   "precision": 18,
   "metric_type": "L2",
-  "ivf_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/recall/ivfflat/result",
-  "hnsw_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/recall/hnsw/result",
+  "ivf_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/recall/ivfflat-fix2/result",
+  "hnsw_result_prefix": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/recall/hnsw-fix2/result",
   "baseline_result": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline.txt",
   "use_base_query": false
 }

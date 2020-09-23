@@ -174,7 +174,8 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
     topks.clear();
     if (extra_params.contains("print_milvus"))
         save_ = extra_params["print_milvus"];
-//#pragma omp parallel for
+    save_ = false;
+#pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
         tpk = std::max(int(topk), 2048);

@@ -617,8 +617,8 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
             std::cout << "pass nlist = " << index_json["nlist"] << " but nprobe = " << sa << std::endl;
             continue;
         }
-        if (index_type == milvus::IndexType::HNSW && query_json["ef"] == 4096)
-            query_json["print_milvus"] = true;
+//        if (index_type == milvus::IndexType::HNSW && query_json["ef"] == 4096)
+//            query_json["print_milvus"] = true;
         ts = std::chrono::high_resolution_clock::now();
         assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json, topk_result));
 //        assert_status(engine->SearchBatch(collection_name, weights, query_entities, topk, query_json, topk_result));
