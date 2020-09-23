@@ -9,7 +9,6 @@ target_link_libraries(test_ip
         hdf5_cpp
         pthread)
 
-
 add_executable(test_nra test_nra.cpp)
 
 target_link_libraries(test_nra
@@ -19,6 +18,14 @@ target_link_libraries(test_nra
         hdf5_cpp
         pthread)
 
+add_executable(ip_nra_performance ip_nra_performance.cpp)
+
+target_link_libraries(ip_nra_performance
+        multi_vector
+        milvus_sdk
+        hdf5_serial
+        hdf5_cpp
+        pthread)
 
 add_executable(test_l2 test_l2.cpp utils.cpp)
 

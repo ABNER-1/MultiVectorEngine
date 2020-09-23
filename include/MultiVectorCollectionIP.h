@@ -41,6 +41,12 @@ class MultiVectorCollectionIP : public MultiVectorCollection {
            const std::vector<std::vector<milvus::Entity>>& entity_array,
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
+
+    Status
+    SearchBatch(const std::vector<float>& weight,
+           const std::vector<std::vector<milvus::Entity>>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) override;
  private:
     inline Status
     mergeAndNormalize(const std::vector<RowEntity>& entity_arrays,

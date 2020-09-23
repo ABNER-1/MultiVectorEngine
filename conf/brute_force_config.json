@@ -13,14 +13,14 @@
     1024
   ],
   "weights": [
-    0.5,
-    0.5
+    0.8,
+    0.2
   ],
   "nb": 238459,
   "nq": 100,
   "topk": 50,
   "precision": 18,
   "metric_type": "L2",
-  "baseline_result": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline.txt",
+  "baseline_result": "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline82.txt",
   "use_base_query": false
 }

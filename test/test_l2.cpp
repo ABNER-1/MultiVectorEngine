@@ -103,35 +103,35 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
 
 void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("ivf_result_prefix");
-    std::vector<int> nlists = {128, 256, 512, 1024, 2048};
-    std::vector<int> nprobes = {1, 4, 8, 16, 32, 64, 128, 256};
+    std::vector<int> nlists = {1024, 2048, 4096};
+//    std::vector<int> nlists = {4096};
+    std::vector<int> nprobes = {1, 8, 32, 128, 256, 512, 1024, 2048};
     int cnt = 0;
     for (auto &nlist : nlists) {
-        for (auto &nprobe: nprobes) {
-            std::cout << "nlist = " << nlist << ", nprobe = " << nprobe << std::endl;
-            std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
-            nlohmann::json search_args = {{"nprobe", nprobe}};
-            testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}}, search_args,
-                config, milvus::MetricType::L2, collection_name, result_file);
-        }
+        std::cout << "build index nlist = " << nlist << std::endl;
+        nlohmann::json search_args = {};
+        testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}}, search_args,
+                      config, milvus::MetricType::L2, collection_name, result_prefix, nprobes, cnt);
     }
 }
 
 void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("hnsw_result_prefix");
-    std::vector<int> ms = {4, 16, 24, 32};
-    std::vector<int> efcs = {50, 200, 400};
-    std::vector<int> efss = {100, 400, 1000};
+//    std::vector<int> ms = {4, 8, 12, 16, 24};
+    std::vector<int> ms = {4, 8, 12, 16, 24};
+//    std::vector<int> ms = {16};
+    std::vector<int> efcs = {8, 32, 64, 128, 256};
+//    std::vector<int> efcs = {100};
+    std::vector<int> efss = {50, 128, 256, 512, 1024};
+//    std::vector<int> efss = {2048, 3080, 4000, 4096};
+//    std::vector<int> efss = {4096};
     int cnt = 0;
     for (auto &m : ms) {
         for (auto &efc: efcs) {
-            for (auto &efs : efss) {
-                std::cout << "M = " << m << ", efConstruction = " << efc << ", efSearch = " << efs << std::endl;
-                std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
-                nlohmann::json search_args = {{"ef", efs}};
-                testIndexType(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}}, search_args,
-                              config, milvus::MetricType::L2, collection_name, result_file);
-            }
+            std::cout << "build index M = " << m << ", efConstruction = " << efc << std::endl;
+            nlohmann::json search_args = {};
+            testIndexType(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}}, search_args,
+                          config, milvus::MetricType::L2, collection_name, result_prefix, efss, cnt);
         }
     }
 }
