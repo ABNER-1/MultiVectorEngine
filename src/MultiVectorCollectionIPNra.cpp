@@ -136,6 +136,7 @@ MultiVectorCollectionIPNra::SearchBatch(const std::vector<float>& weight,
                                    int64_t topk, nlohmann::json& extra_params,
                                    milvus::TopKQueryResult& topk_query_results) {
     std::cout << "not implement yet!" << std::endl;
+    return Status::OK();
 }
 
 Status
@@ -148,11 +149,11 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
 //    #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 150l);
+        tpk = std::max(topk, 512l);
         threshold = 2048;
         bool succ_flag = false;
         do {
-            tpk = std::min(threshold, tpk + 100);
+            tpk = std::min(threshold, tpk * 2);
             if (extra_params.contains("ef")
                 && extra_params["ef"] < tpk) {
                 extra_params["ef"] = tpk;
