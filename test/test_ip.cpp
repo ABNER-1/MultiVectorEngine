@@ -9,7 +9,7 @@ namespace {
 //std::string ip = "192.168.1.147";
 std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection4";
+auto collection_name = "test_collection";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;
@@ -169,11 +169,11 @@ main(int argc, char** argv) {
         DropIndex(engine);
     }
 
-//    std::vector<int> ms = {4, 8, 16, 48};
-//    std::vector<int> efcs = {8, 9, 12, 16, 32, 100, 512};
-    std::vector<int> ms = {4, 8};
-    std::vector<int> efcs = {8, 9, 10, 16, 32};
-    std::vector<int> efs = {10, 50, 80, 140, 300, 1024, 2048, 4096};
+    std::vector<int> ms = {4, 8, 16, 24, 32, 38, 42, 48};
+    std::vector<int> efcs = {8, 9, 12, 16, 32, 72, 100, 300, 400, 512};
+//    std::vector<int> ms = {4, 8};
+//    std::vector<int> efcs = {8, 9, 10, 16, 32};
+    std::vector<int> efs = {10, 50, 80, 140, 300, 600, 800,1024, 2048, 4096};
     number = 0;
     for (auto m : ms) {
         for (auto& efc: efcs) {

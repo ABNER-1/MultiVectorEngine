@@ -103,6 +103,7 @@ MultiVectorCollectionIP::SearchBatch(const std::vector<float>& weight,
                                 int64_t topk, nlohmann::json& extra_params,
                                 milvus::TopKQueryResult& topk_query_results) {
     std::cout << "not implement yet!" << std::endl;
+    return Status::OK();
 }
 
 Status

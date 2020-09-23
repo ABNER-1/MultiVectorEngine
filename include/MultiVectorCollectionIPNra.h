@@ -46,7 +46,7 @@ class MultiVectorCollectionIPNra : public MultiVectorCollection {
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;
 
-    virtual void
+    void
     GetRowEntityByID(const std::vector<int64_t>& id_arrays,
                     std::vector<RowEntity>& row_entities) override;
 

@@ -305,18 +305,10 @@ int main(int argc, char **argv) {
     search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     std::cout << "Search costs " << search_duration << " ms." << std::endl;
 
-    show_result(result);
+    // show_result(result);
     std::string baseline_file = config.at("baseline_result");
     writeBenchmarkResult(result, baseline_file, search_duration, topk);
 
-//    while (scanf("%d", &nq) != EOF) {
-//        if (nq <= 0) continue;
-//        std::vector<milvus::multivector::RowEntity> query_data(vec_groups, milvus::multivector::RowEntity(nq, milvus::Entity()));
-//        LoadQuery(query_data);
-//        result.resize(nq);
-//        DoSearch(raw_data, query_data, result);
-//        std::vector<milvus::multivector::RowEntity>().swap(query_data);
-//    }
     return EXIT_SUCCESS;
 }
 
