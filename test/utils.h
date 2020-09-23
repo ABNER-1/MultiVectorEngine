@@ -76,7 +76,9 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
               const nlohmann::json& config,
               milvus::MetricType metric_type,
               const std::string &collection_name,
-              const std::string &result_file);
+              const std::string &result_file,
+              const std::vector<int> &search_args,
+              int &file_cnt);
 
 void
 loadDataFromHdf5(const std::string& filename,

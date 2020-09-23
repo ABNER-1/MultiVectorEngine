@@ -76,6 +76,16 @@ MultiVectorEngine::Search(const std::string& collection_name,
 }
 
 Status
+MultiVectorEngine::SearchBatch(const std::string& collection_name,
+                          const std::vector<float>& weight,
+                          const std::vector<RowEntity>& entity_array,
+                          int64_t topk, nlohmann::json& extra_params,
+                          milvus::TopKQueryResult& topk_query_results) {
+    return getOrFetchCollectionPtr(collection_name)->SearchBatch(weight, entity_array, topk,
+                                                            extra_params, topk_query_results);
+}
+
+Status
 MultiVectorEngine::createCollectionPtr(const std::string& collection_name,
                                        milvus::MetricType metric_type,
                                        const std::string& strategy) {

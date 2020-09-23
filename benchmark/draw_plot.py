@@ -265,16 +265,79 @@ def draw_ip_glove(image_name):
 
 
 def draw_l2(image_name):
-    linestyle = create_linestyles(["L2 NRA IVF-Flat", "L2 NRA HNSW"])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/baseline.txt"
-    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ipnra"
+    linestyle = create_linestyles(["NRA200_16384 IVFFLAT", "NRA200_16384 HNSW",
+                                   "NRA800_2048 IVFFLAT", "NRA800_2048 HNSW",
+                                   "NRA16384_16384 IVFFLAT", "NRA16384_16384 HNSW",
+                                   "NRA2048_2048 IVFFLAT", "NRA2048_2048 HNSW",
+                                   "NRA800_16384 IVFFLAT", "NRA800_16384 HNSW",
+                                   "NRA16384_16384 IVFFLAT-BATCH", "NRA16384_16384 HNSW-BATCH",
+                                   "NRA4096_4096 IVFFLAT", "NRA4096_4096 HNSW",
+                                   "NRA2048_2048 IVFFLAT-BATCH", "NRA2048_2048 HNSW-BATCH",
+                                   "NRA2048_2048 IVFFLAT-18-73", "NRA2048_2048 HNSW-18-73",
+                                   "NRA2048_2048 IVFFLAT-18-82", "NRA2048_2048 HNSW-18-82",
+                                   "NRA2048_2048 IVFFLAT-18", "NRA2048_2048 HNSW-18"])
+                                   # "NRA4096_4096 IVFFLAT-BATCH", "NRA4096_4096 HNSW-BATCH"])
+    baseline_file = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/baseline55.txt"
+    ivf_dir1 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/200_16384"
+    hnsw_dir1 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/200_16384"
+    ivf_dir2 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/800_2048"
+    hnsw_dir2 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/800_2048"
+    ivf_dir3 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/16384_16384"
+    hnsw_dir3 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/16384_16384"
+    ivf_dir4 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/2048_2048"
+    hnsw_dir4 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/2048_2048"
+    ivf_dir5 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/800_16384"
+    hnsw_dir5 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/800_16384"
+    ivf_dir6 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/16384_16384_batch"
+    hnsw_dir6 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/16384_16384_batch"
+    ivf_dir8 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/4096_4096"
+    hnsw_dir8 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/4096_4096"
+    ivf_dir7 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/2048_2048_batch"
+    hnsw_dir7 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/2048_2048_batch"
+    ivf_dir9 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/2048_2048_18p"
+    hnsw_dir9 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/2048_2048_18p"
+    ivf_dir10 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/2048_2048_18p_73"
+    hnsw_dir10 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/2048_2048_18p_73"
+    ivf_dir11 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/IVFFLAT/2048_2048_18p_82"
+    hnsw_dir11 = "/home/zilliz/workspace/dev/milvus/MultiVectorEngine/results/l2/HNSW/2048_2048_18p_82"
 
-    ivf_metric_data = get_metric_data(ivf_dir, baseline_file, "L2 NRA IVF-Flat")
+    ivf_metric_data1 = get_metric_data(ivf_dir1 , baseline_file, "NRA200_16384 IVFFLAT")
+    hnsw_metric_data1 = get_metric_data(hnsw_dir1 , baseline_file, "NRA200_16384 HNSW")
+    ivf_metric_data2 = get_metric_data(ivf_dir2 , baseline_file, "NRA800_2048 IVFFLAT")
+    hnsw_metric_data2 = get_metric_data(hnsw_dir2 , baseline_file, "NRA800_2048 HNSW")
+    ivf_metric_data3 = get_metric_data(ivf_dir3 , baseline_file, "NRA16384_16384 IVFFLAT")
+    hnsw_metric_data3 = get_metric_data(hnsw_dir3 , baseline_file, "NRA16384_16384 HNSW")
+    ivf_metric_data4 = get_metric_data(ivf_dir4 , baseline_file, "NRA2048_2048 IVFFLAT")
+    hnsw_metric_data4 = get_metric_data(hnsw_dir4 , baseline_file, "NRA2048_2048 HNSW")
+    ivf_metric_data5 = get_metric_data(ivf_dir5 , baseline_file, "NRA800_16384 IVFFLAT")
+    hnsw_metric_data5 = get_metric_data(hnsw_dir5 , baseline_file, "NRA800_16384 HNSW")
+    ivf_metric_data6 = get_metric_data(ivf_dir6 , baseline_file, "NRA16384_16384 IVFFLAT-BATCH")
+    hnsw_metric_data6 = get_metric_data(hnsw_dir6 , baseline_file, "NRA16384_16384 HNSW-BATCH")
+    ivf_metric_data8 = get_metric_data(ivf_dir8 , baseline_file, "NRA4096_4096 IVFFLAT")
+    hnsw_metric_data8 = get_metric_data(hnsw_dir8 , baseline_file, "NRA4096_4096 HNSW")
+    ivf_metric_data7 = get_metric_data(ivf_dir7 , baseline_file, "NRA2048_2048 IVFFLAT-BATCH")
+    hnsw_metric_data7 = get_metric_data(hnsw_dir7 , baseline_file, "NRA2048_2048 HNSW-BATCH")
+    ivf_metric_data9 = get_metric_data(ivf_dir9 , baseline_file, "NRA2048_2048 IVFFLAT-18")
+    hnsw_metric_data9 = get_metric_data(hnsw_dir9 , baseline_file, "NRA2048_2048 HNSW-18")
+    ivf_metric_data10 = get_metric_data(ivf_dir10 , baseline_file, "NRA2048_2048 IVFFLAT-18-73")
+    hnsw_metric_data10 = get_metric_data(hnsw_dir10 , baseline_file, "NRA2048_2048 HNSW-18-73")
+    ivf_metric_data11 = get_metric_data(ivf_dir11 , baseline_file, "NRA2048_2048 IVFFLAT-18-82")
+    hnsw_metric_data11 = get_metric_data(hnsw_dir11 , baseline_file, "NRA2048_2048 HNSW-18-82")
 
-    hnsw_metric_data = get_metric_data(hnsw_dir, baseline_file, "L2 NRA HNSW")
-
-    data = {"L2 NRA IVF-Flat": ivf_metric_data, "L2 NRA HNSW": hnsw_metric_data}
+    # data = {"L2 NRA IVF-Flat": ivf_metric_data, "L2 NRA HNSW": hnsw_metric_data}
+    data = {
+            # "NRA200_16384 IVFFLAT": ivf_metric_data1, "NRA200_16384 HNSW": hnsw_metric_data1,
+            # "NRA800_2048 IVFFLAT": ivf_metric_data2, "NRA800_2048 HNSW": hnsw_metric_data2,
+            "NRA16384_16384 IVFFLAT": ivf_metric_data3, "NRA16384_16384 HNSW": hnsw_metric_data3,
+            "NRA2048_2048 IVFFLAT": ivf_metric_data4, "NRA2048_2048 HNSW": hnsw_metric_data4,
+            "NRA2048_2048 IVFFLAT-18": ivf_metric_data9, "NRA2048_2048 HNSW-18": hnsw_metric_data9,
+            # "NRA2048_2048 IVFFLAT-18-73": ivf_metric_data10, "NRA2048_2048 HNSW-18-73": hnsw_metric_data10,
+            # "NRA2048_2048 IVFFLAT-18-82": ivf_metric_data11, "NRA2048_2048 HNSW-18-82": hnsw_metric_data11,
+            # "NRA4096_4096 IVFFLAT": ivf_metric_data8, "NRA4096_4096 HNSW": hnsw_metric_data8,
+            # "NRA800_16384 IVFFLAT": ivf_metric_data5, "NRA800_16384 HNSW": hnsw_metric_data5,
+            # "NRA16384_16384 IVFFLAT-BATCH": ivf_metric_data6, "NRA16384_16384 HNSW-BATCH": hnsw_metric_data6,
+            # "NRA2048_2048 IVFFLAT-BATCH": ivf_metric_data7, "NRA2048_2048 HNSW-BATCH": hnsw_metric_data7
+    }
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
                 xn='k-nn', yn='qps', fn_out=image_name,
                 linestyles=linestyle, batch=False)
@@ -288,6 +351,6 @@ if __name__ == "__main__":
     nra_ivf_omp_name = "NRA IVF-Flat with openMP"
     nra_hnsw_omp_name = "NRA HNSW with openMP"
 
-    draw_ip_recipe("./ip_result_compare.png")
-    draw_ip_glove("./ip_result_glove.png")
-    # draw_l2("./l2_result.png")
+    # draw_ip_recipe("./ip_result_compare.png")
+    # draw_ip_glove("./ip_result_glove.png")
+    draw_l2("../results/pngs/l2_result_more_pts_55_2.png")

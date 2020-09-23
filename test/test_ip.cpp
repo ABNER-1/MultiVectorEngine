@@ -9,7 +9,7 @@ namespace {
 //std::string ip = "192.168.1.147";
 std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection5";
+auto collection_name = "test_collection6";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;

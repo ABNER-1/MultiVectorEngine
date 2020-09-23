@@ -112,7 +112,7 @@ void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::stri
             std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
             nlohmann::json search_args = {{"nprobe", nprobe}};
             testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}}, search_args,
-                config, milvus::MetricType::L2, collection_name, result_file);
+                config, milvus::MetricType::L2, collection_name, result_prefix, nprobes, cnt);
         }
     }
 }
@@ -130,7 +130,7 @@ void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string 
                 std::string result_file = result_prefix + std::to_string(++ cnt) + ".txt";
                 nlohmann::json search_args = {{"ef", efs}};
                 testIndexType(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}}, search_args,
-                              config, milvus::MetricType::L2, collection_name, result_file);
+                              config, milvus::MetricType::L2, collection_name, result_prefix, efss, cnt);
             }
         }
     }

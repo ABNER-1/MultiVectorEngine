@@ -44,6 +44,12 @@ class MultiVectorCollection {
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) = 0;
 
+    virtual Status
+    SearchBatch(const std::vector<float>& weight,
+           const std::vector<std::vector<milvus::Entity>>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) = 0;
+
     virtual void
     GetRowEntityByID(const std::vector<int64_t>& id_arrays,
                      std::vector<RowEntity>& row_entities) {}
