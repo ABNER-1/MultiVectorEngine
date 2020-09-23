@@ -126,7 +126,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
                                                                               "recall failed!");
     auto es = std::chrono::high_resolution_clock::now();
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(es - ns).count();
-    std::cerr << search_duration << "; " << nra_time << std::endl;
+//    std::cerr << search_duration << "; " << nra_time << std::endl;
     return stat;
 }
 
@@ -137,7 +137,7 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
         tpk = std::max(topk, 150l);

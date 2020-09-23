@@ -469,9 +469,9 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         auto last_line_id = node_size;
         for (auto& node :nodes) node.ub = node.lb;
         // todo: check it
-        #pragma omp parallel for
+//        #pragma omp parallel for
         for (int j = 0; j < node_size; ++j) {
-            for (auto i = 0; i < num_group; ++i) {
+            for (int i = 0; i < num_group; ++i) {
                 if (nodes[j].group_flags[i]) continue;
                 nodes[j].ub += p_dists[i][last_line_id - 1] * weight[i];
             }
@@ -487,13 +487,11 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
                 find_flag = true;
             }
         }
-        if (!find_flag)
-            max_unselected_ub = std::numeric_limits<float>::max();
+        if (!find_flag) max_unselected_ub = std::numeric_limits<float>::max();
         return max_unselected_ub;
     };
     auto rankTopk = [&]() {
         for (auto i = 0; i < nodes.size(); ++i) {
-//            nodes[i].ub = cur_max_estimate_value;
             result_set.emplace(i);
             nodes[i].result_flag = true;
             if (result_set.size() > TopK) {
@@ -502,7 +500,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
             }
         }
     };
-    // judge exit condition
+    // judge exit conditiontopk
     maintainUb();
     rankTopk();
     ret = (nodes[result_set.top()].lb >= findOtherUb());
