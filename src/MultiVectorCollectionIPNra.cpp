@@ -24,6 +24,18 @@ MultiVectorCollectionIPNra::CreateCollection(const std::vector<int64_t>& dimensi
 }
 
 Status
+MultiVectorCollectionIPNra::HasCollection() {
+    bool has_collection = false;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        has_collection = conn_ptr_->HasCollection(child_collection_names_[i]);
+    }
+    if (has_collection)
+        return Status::OK();
+    else
+        return Status(StatusCode::UnknownError, "has no collection");
+}
+
+Status
 MultiVectorCollectionIPNra::DropCollection() {
     for (auto& child_collection_name: child_collection_names_) {
         auto status = conn_ptr_->DropCollection(child_collection_name);

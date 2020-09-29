@@ -30,6 +30,9 @@ class MultiVectorCollection {
     Delete(const std::vector<int64_t>& id_arrays) = 0;
 
     virtual Status
+    HasCollection() = 0;
+
+    virtual Status
     CreateIndex(milvus::IndexType index_type, const std::string& extra_params) = 0;
 
     virtual Status

@@ -34,6 +34,9 @@ class BaseEngine {
     Delete(const std::string& collection_name, const std::vector<int64_t>& id_arrays) = 0;
 
     virtual Status
+    HasCollection(const std::string& collection_name) = 0;
+
+    virtual Status
     CreateIndex(const std::string& collection_name, milvus::IndexType index_type, const std::string& param) = 0;
 
     virtual Status

@@ -29,6 +29,18 @@ MultiVectorCollectionIP::CreateCollection(const std::vector<int64_t>& dimensions
 }
 
 Status
+MultiVectorCollectionIP::HasCollection() {
+    bool has_collection = false;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        has_collection = conn_ptr_->HasCollection(child_collection_names_[i]);
+    }
+    if (has_collection)
+        return Status::OK();
+    else
+        return Status(StatusCode::UnknownError, "has no collection");
+}
+
+Status
 MultiVectorCollectionIP::DropCollection() {
     return this->conn_ptr_->DropCollection(this->collection_name_);
 }

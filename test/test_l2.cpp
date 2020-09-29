@@ -18,7 +18,7 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
 
     // create collection and insert data, once per test, save time
     srand((unsigned)time(nullptr));
-    auto collection_name = "l2_test_collection" + std::to_string(random() % 100);
+    auto collection_name = "l2_test_collection";
     int vec_group_num = config.at("group_num");
     int nq = config.at("nq");
     int topk = config.at("topk");
@@ -48,64 +48,72 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
         index_file_sizes.push_back(2048);
     }
 
-    assert_status(engine->CreateCollection(collection_name, milvus::MetricType::L2, dim, index_file_sizes));
+    auto hc_stat = engine->HasCollection(collection_name);
+    if (!hc_stat.ok()) {
+        std::cout << "collection " << collection_name << " does not exisits" << std::endl;
+        std::cout << "message: " << hc_stat.message() << std::endl;
+        assert_status(engine->CreateCollection(collection_name, milvus::MetricType::L2, dim, index_file_sizes));
 
-    std::vector<std::vector<int64_t>> all_id_arrays;
-    std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
-    std::vector<int64_t> ids;
-    generateIds(vector_num, ids, -1);
-    int64_t limit_insert = 256 * 1024 * 1024;
-    auto limit_insert_rows = limit_insert / 4 / max_dim;
-    std::cout << "limit insert rows is: " << limit_insert_rows << std::endl;
-    ts = std::chrono::high_resolution_clock::now();
-    for (auto i = 0; i < vec_group_num; ++i) {
-        std::ifstream fin(base_data_locations[i], std::ios::in);
-        fin.precision(precision);
-        for (auto j = 0; j < vector_num; ++j) {
-            row_entities[j][i].float_data.resize(dim[i]);
-            for (auto k = 0; k < dim[i]; ++k) {
-                fin >> row_entities[j][i].float_data[k];
+        std::vector<std::vector<int64_t>> all_id_arrays;
+        std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
+        std::vector<int64_t> ids;
+        generateIds(vector_num, ids, -1);
+        int64_t limit_insert = 256 * 1024 * 1024;
+        auto limit_insert_rows = limit_insert / 4 / max_dim;
+        std::cout << "limit insert rows is: " << limit_insert_rows << std::endl;
+        ts = std::chrono::high_resolution_clock::now();
+        for (auto i = 0; i < vec_group_num; ++i) {
+            std::ifstream fin(base_data_locations[i], std::ios::in);
+            fin.precision(precision);
+            for (auto j = 0; j < vector_num; ++j) {
+                row_entities[j][i].float_data.resize(dim[i]);
+                for (auto k = 0; k < dim[i]; ++k) {
+                    fin >> row_entities[j][i].float_data[k];
+                }
             }
+            fin.close();
         }
-        fin.close();
-    }
-    te = std::chrono::high_resolution_clock::now();
-    auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
-    std::cout << "LoadRowData costs " << search_duration << " ms." << std::endl;
-    int insert_cnt = 0;
-    ts = std::chrono::high_resolution_clock::now();
-    for (auto i = 0; i < vector_num; i += limit_insert_rows) {
-        auto lb = i;
-        auto ub = (i + limit_insert_rows > vector_num) ? vector_num : i + limit_insert_rows;
-        std::vector<RowEntity> insert_batch(ub - lb, RowEntity(vec_group_num, milvus::Entity()));
-        std::vector<int64_t> ids_batch(ub - lb);
-        for (auto ii = lb; ii < ub; ++ ii) {
-            ids_batch[ii - i] = ids[ii];
-            for (auto j = 0; j < vec_group_num; ++ j) {
-                insert_batch[ii - i][j].float_data.resize(dim[j]);
-                for (auto k = 0; k < dim[j]; ++ k)
-                    insert_batch[ii - i][j].float_data[k] = row_entities[ii][j].float_data[k];
+        te = std::chrono::high_resolution_clock::now();
+        auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+        std::cout << "LoadRowData costs " << search_duration << " ms." << std::endl;
+        int insert_cnt = 0;
+        ts = std::chrono::high_resolution_clock::now();
+        for (auto i = 0; i < vector_num; i += limit_insert_rows) {
+            auto lb = i;
+            auto ub = (i + limit_insert_rows > vector_num) ? vector_num : i + limit_insert_rows;
+            std::vector<RowEntity> insert_batch(ub - lb, RowEntity(vec_group_num, milvus::Entity()));
+            std::vector<int64_t> ids_batch(ub - lb);
+            for (auto ii = lb; ii < ub; ++ ii) {
+                ids_batch[ii - i] = ids[ii];
+                for (auto j = 0; j < vec_group_num; ++ j) {
+                    insert_batch[ii - i][j].float_data.resize(dim[j]);
+                    for (auto k = 0; k < dim[j]; ++ k)
+                        insert_batch[ii - i][j].float_data[k] = row_entities[ii][j].float_data[k];
+                }
             }
+            insert_cnt += (ub - lb);
+            assert_status(engine->Insert(collection_name, insert_batch, ids_batch));
+            std::cout << "Insert " << ub - lb << " vectors into milvus." << std::endl;
+            std::vector<RowEntity>().swap(insert_batch);
+            std::vector<int64_t>().swap(ids_batch);
         }
-        insert_cnt += (ub - lb);
-        assert_status(engine->Insert(collection_name, insert_batch, ids_batch));
-        std::cout << "Insert " << ub - lb << " vectors into milvus." << std::endl;
-        std::vector<RowEntity>().swap(insert_batch);
-        std::vector<int64_t>().swap(ids_batch);
+        assert_status(engine->Flush(collection_name));
+        te = std::chrono::high_resolution_clock::now();
+        std::cout << "Insert " << insert_cnt << "/" << vector_num << " vectors into milvus." << std::endl;
+        search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+        std::cout << "Insert data costs " << search_duration << " ms." << std::endl;
+    } else {
+        std::cout << "collection " << collection_name << " has alread exisits" << std::endl;
     }
-    assert_status(engine->Flush(collection_name));
-    te = std::chrono::high_resolution_clock::now();
-    std::cout << "Insert " << insert_cnt << "/" << vector_num << " vectors into milvus." << std::endl;
-    search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
-    std::cout << "Insert data costs " << search_duration << " ms." << std::endl;
     return collection_name;
 }
 
 void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
     std::string result_prefix = config.at("ivf_result_prefix");
-    std::vector<int> nlists = {1024, 2048, 4096};
-//    std::vector<int> nlists = {4096};
-    std::vector<int> nprobes = {1, 8, 32, 128, 256, 512, 1024, 2048};
+//    std::vector<int> nlists = {1024, 2048, 4096};
+    std::vector<int> nlists = {4096};
+//    std::vector<int> nprobes = {1, 8, 32, 128, 256, 512, 1024, 2048};
+    std::vector<int> nprobes = {1};
     int cnt = 0;
     for (auto &nlist : nlists) {
         std::cout << "build index nlist = " << nlist << std::endl;
@@ -155,9 +163,9 @@ main(int argc, char **argv) {
 
     auto collection_name = CreateCollection(config, engine);
     TestIVFFLAT(config, engine, collection_name);
-    TestHNSW(config, engine, collection_name);
+//    TestHNSW(config, engine, collection_name);
 
-    assert_status(engine->DropCollection(collection_name));
+//    assert_status(engine->DropCollection(collection_name));
 }
 
 /*

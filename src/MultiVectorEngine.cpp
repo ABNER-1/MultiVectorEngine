@@ -49,6 +49,15 @@ MultiVectorEngine::Delete(const std::string& collection_name,
 }
 
 Status
+MultiVectorEngine::HasCollection(const std::string& collection_name) {
+    auto cp = getOrFetchCollectionPtr(collection_name);
+    if (cp)
+        return cp->HasCollection();
+    else
+        return Status(StatusCode::UnknownError, "no collection");
+}
+
+Status
 MultiVectorEngine::CreateIndex(const std::string& collection_name,
                                milvus::IndexType index_type,
                                const std::string& param) {

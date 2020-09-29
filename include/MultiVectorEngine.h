@@ -37,6 +37,9 @@ class MultiVectorEngine : public BaseEngine {
     Delete(const std::string& collection_name, const std::vector<int64_t>& id_arrays) override;
 
     Status
+    HasCollection(const std::string& collection_name) override;
+
+    Status
     CreateIndex(const std::string& collection_name, milvus::IndexType index_type, const std::string& param) override;
 
     Status
