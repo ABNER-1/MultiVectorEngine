@@ -9,7 +9,7 @@ namespace {
 //std::string ip = "192.168.1.147";
 std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection6";
+auto collection_name = "test_collection12";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;
@@ -157,13 +157,6 @@ main(int argc, char** argv) {
 //    std::vector<int> nlists = {4096, 16384};
 //        {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096, 8192, 16384};
 
-    {
-        auto result_file_name = ivf_result_prefix + std::to_string(10000) + ".txt";
-        nlohmann::json search_params = {{"nprobe", 10}};
-        Search(engine, search_params, result_file_name);
-        auto topks = engine->GetActualTopk(collection_name);
-        writeTopk(topks);
-    }
     int number = 30;
     for (auto nlist : nlists) {
         CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});

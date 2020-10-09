@@ -1,10 +1,10 @@
 {
   "group_num": 1,
   "base_data_locations": [
-    "/home/abner/recipe1M_model_all/results_train/data_img.txt"
+    "/home/abner/vector/results_train/data_img.txt"
   ],
   "query_data_locations": [
-    "/home/abner/recipe1M_model_all/results_test/data_img.txt"
+    "/home/abner/vector/results_test/data_img.txt"
   ],
   "dimensions": [
     1024

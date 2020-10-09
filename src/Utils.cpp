@@ -396,7 +396,9 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
     // judge exit conditiontopk
     maintainUb();
     rankTopk();
-    ret = (nodes[result_set.top()].lb >= findOtherUb());
+    auto lb_in_result = nodes[result_set.top()].lb;
+    auto ub_in_other = findOtherUb();
+    ret = (lb_in_result >= ub_in_other);
 
     // organize result set
     auto tot_size = result_set.size();

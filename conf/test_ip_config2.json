@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/home/abner/recipe1M_model_all/results_train/data_img.txt",
-    "/home/abner/recipe1M_model_all/results_train/data_rec.txt"
+    "/home/abner/vector/results_train/data_img.txt",
+    "/home/abner/vector/results_train/data_rec.txt"
   ],
   "query_data_locations": [
-    "/home/abner/recipe1M_model_all/results_test/data_img.txt",
-    "/home/abner/recipe1M_model_all/results_test/data_rec.txt"
+    "/home/abner/vector/results_test/data_img.txt",
+    "/home/abner/vector/results_test/data_rec.txt"
   ],
   "dimensions": [
     1024,

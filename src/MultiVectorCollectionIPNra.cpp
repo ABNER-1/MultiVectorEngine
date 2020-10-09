@@ -126,7 +126,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
                                                                               "recall failed!");
     auto es = std::chrono::high_resolution_clock::now();
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(es - ns).count();
-//    std::cerr << search_duration << "; " << nra_time << std::endl;
+    std::cerr << search_duration << "; " << nra_time << std::endl;
     return stat;
 }
 
@@ -146,10 +146,10 @@ MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
-//    #pragma omp parallel for
+    #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 512l);
+        tpk = std::max(topk, 2048l);
         threshold = 2048;
         bool succ_flag = false;
         do {
@@ -232,7 +232,7 @@ MultiVectorCollectionIPNra::BatchSearchImpl(const std::vector<float>& weight,
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(search_end - search_start).count();
 
     auto nra_start = std::chrono::high_resolution_clock::now();
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int j = 0; j < nq; ++j) {
         bool success_flag = NoRandomAccessAlgorithmIP(tqrs, topk_query_results[j], weight, topk);
         success_flags[j] = success_flag;
@@ -241,7 +241,6 @@ MultiVectorCollectionIPNra::BatchSearchImpl(const std::vector<float>& weight,
     auto nra_time = std::chrono::duration_cast<std::chrono::milliseconds>(nra_end - nra_start).count();
     std::cerr << search_duration << "; " << nra_time << std::endl;
     return Status::OK();
-
 }
 
 void
