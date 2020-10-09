@@ -168,7 +168,7 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
         cur_min_estimate_value += ((*p_dists[i]) * weight[i]);
-        max_ubs[i] = p_dists[i][topk - 1] * weight[i] + weight[i];// + 1;
+        max_ubs[i] = p_dists[i][topk - 1] * weight[i] + weight[i] * 2;
         max_ubs[num_group] += max_ubs[i];
         auto cur_id = *p_ids[i];
         auto target = hash_tbl.find(cur_id);

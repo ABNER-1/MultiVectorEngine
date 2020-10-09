@@ -49,6 +49,15 @@ MultiVectorEngine::Delete(const std::string& collection_name,
 }
 
 Status
+MultiVectorEngine::HasCollection(const std::string& collection_name) {
+    auto cp = getOrFetchCollectionPtr(collection_name);
+    if (cp)
+        return cp->HasCollection();
+    else
+        return Status(StatusCode::UnknownError, "no collection");
+}
+
+Status
 MultiVectorEngine::CreateIndex(const std::string& collection_name,
                                milvus::IndexType index_type,
                                const std::string& param) {
@@ -63,6 +72,16 @@ MultiVectorEngine::DropIndex(const std::string& collection_name) {
 Status
 MultiVectorEngine::Flush(const std::string& collection_name) {
     return getOrFetchCollectionPtr(collection_name)->Flush();
+}
+
+Status
+MultiVectorEngine::SearchBase(const std::string& collection_name,
+                          const std::vector<float>& weight,
+                          const std::vector<RowEntity>& entity_array,
+                          int64_t topk, nlohmann::json& extra_params,
+                          milvus::TopKQueryResult& topk_query_results) {
+    return getOrFetchCollectionPtr(collection_name)->SearchBase(weight, entity_array, topk,
+                                                            extra_params, topk_query_results);
 }
 
 Status

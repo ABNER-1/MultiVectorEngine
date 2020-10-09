@@ -37,6 +37,9 @@ class MultiVectorEngine : public BaseEngine {
     Delete(const std::string& collection_name, const std::vector<int64_t>& id_arrays) override;
 
     Status
+    HasCollection(const std::string& collection_name) override;
+
+    Status
     CreateIndex(const std::string& collection_name, milvus::IndexType index_type, const std::string& param) override;
 
     Status
@@ -47,6 +50,12 @@ class MultiVectorEngine : public BaseEngine {
 
     Status
     Search(const std::string& collection_name, const std::vector<float>& weight,
+           const std::vector<RowEntity>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) override;
+
+    Status
+    SearchBase(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;

@@ -28,6 +28,9 @@ class MultiVectorCollectionIP : public MultiVectorCollection {
     Delete(const std::vector<int64_t>& id_arrays) override;
 
     Status
+    HasCollection() override;
+
+    Status
     CreateIndex(milvus::IndexType index_type, const std::string& extra_params) override;
 
     Status
@@ -38,6 +41,12 @@ class MultiVectorCollectionIP : public MultiVectorCollection {
 
     Status
     Search(const std::vector<float>& weight,
+           const std::vector<std::vector<milvus::Entity>>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) override;
+
+    Status
+    SearchBase(const std::vector<float>& weight,
            const std::vector<std::vector<milvus::Entity>>& entity_array,
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) override;

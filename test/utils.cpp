@@ -536,7 +536,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
     query_json["ef"] = 1;
     query_json["nprobe"] = 1;
     query_json["print_milvus"] = false;
-    assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json, topk_result));
+    assert_status(engine->SearchBase(collection_name, weights, query_entities, topk, query_json, topk_result));
 //    assert_status(engine->SearchBatch(collection_name, weights, query_entities, topk, query_json, topk_result));
     for (auto &sa : search_args) {
         std::string result_file_ = result_file + std::to_string(++ file_cnt) + ".txt";
@@ -553,7 +553,7 @@ testIndexType(std::shared_ptr<milvus::multivector::MultiVectorEngine> engine,
 //        if (index_type == milvus::IndexType::HNSW && query_json["ef"] == 4096)
 //            query_json["print_milvus"] = true;
         ts = std::chrono::high_resolution_clock::now();
-        assert_status(engine->Search(collection_name, weights, query_entities, topk, query_json, topk_result));
+        assert_status(engine->SearchBase(collection_name, weights, query_entities, topk, query_json, topk_result));
 //        assert_status(engine->SearchBatch(collection_name, weights, query_entities, topk, query_json, topk_result));
         te = std::chrono::high_resolution_clock::now();
         search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
