@@ -199,8 +199,8 @@ def get_metric_data(data_dir, baseline_file, name):
     metric_datas = []
     for result_file in result_files:
         recall, qps = calc_recall(result_file, baseline_file)
-        metric_datas.append(("useless", name, recall, qps))
-    metric_datas = remove_useless_point(metric_datas)
+        metric_datas.append((result_file, name, recall, qps))
+    #metric_datas = remove_useless_point(metric_datas)
     print(name, metric_datas)
     return metric_datas
 
@@ -306,4 +306,4 @@ if __name__ == "__main__":
 
     # draw_ip_recipe("./ip_result_compare.png")
     # draw_ip_glove("./ip_result_glove.png")
-    draw_l2("/root/results/pngs/l2/l2_result_test4.png")
+    draw_l2("/root/results/pngs/l2/l2_result_test5.png")

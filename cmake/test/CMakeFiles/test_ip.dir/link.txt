@@ -1,0 +1,1 @@
+/usr/bin/c++   -fopenmp    CMakeFiles/test_ip.dir/test_ip.cpp.o CMakeFiles/test_ip.dir/utils.cpp.o  -o test_ip   -L/root/workspace/MultiVectorEngine/sdk  -Wl,-rpath,/root/workspace/MultiVectorEngine/sdk:/root/workspace/MultiVectorEngine/cmake/src ../src/libmulti_vector.so -lmilvus_sdk -lpthread 

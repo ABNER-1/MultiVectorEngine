@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/root/vectors/data_img.txt",
-    "/root/vectors/data_rec.txt"
+    "/data/recipe/vectors/data_img.txt",
+    "/data/recipe/vectors/data_rec.txt"
   ],
   "query_data_locations": [
-    "/root/vectors/query/data_img.txt",
-    "/root/vectors/query/data_rec.txt"
+    "/data/recipe/vectors/query/data_img.txt",
+    "/data/recipe/vectors/query/data_rec.txt"
   ],
   "dimensions": [
     1024,
@@ -21,6 +21,8 @@
   "topk": 50,
   "precision": 18,
   "metric_type": "L2",
+  "ivf_result_prefix": "/root/results/l2/ivfflat/test3/result",
+  "hnsw_result_prefix": "/root/results/l2/hnsw/test3/result",
   "baseline_result": "/root/results/l2/baseline.txt",
   "use_base_query": false
 }
