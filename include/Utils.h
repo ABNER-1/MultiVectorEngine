@@ -14,6 +14,38 @@ struct NRANode {
     NRANode(int64_t id, float lb, float ub, bool result_flag, size_t group_size):id(id), lb(lb), ub(ub), result_flag(result_flag), occurs_time(0), group_flags(group_size) {}
 };
 
+template<typename MTYPE>
+using DISTFUNC = MTYPE(*)(const void *, const void *, const void *);
+
+static float
+InnerProduct(const void *pVect1, const void *pVect2, const void *qty_ptr) {
+    size_t qty = *((size_t *) qty_ptr);
+    float res = 0;
+    for (unsigned i = 0; i < qty; i++) {
+        res += ((float *) pVect1)[i] * ((float *) pVect2)[i];
+    }
+    return (-res);
+}
+
+static float
+L2Sqr(const void *pVect1, const void *pVect2, const void *qty_ptr) {
+    //return *((float *)pVect2);
+    size_t qty = *((size_t *) qty_ptr);
+    float res = 0;
+    for (unsigned i = 0; i < qty; i++) {
+        float t = ((float *) pVect1)[i] - ((float *) pVect2)[i];
+        res += t * t;
+    }
+    return (res);
+}
+
+struct Compare {
+    constexpr bool operator()(std::pair<float, size_t> const &a,
+                              std::pair<float, size_t> const &b) const noexcept {
+        return a.first < b.first;
+    }
+};
+
 void RearrangeEntityArray(const std::vector<std::vector<milvus::Entity>> &entity_array,
                           std::vector<std::vector<milvus::Entity>> &rearranged_queries,
                           size_t num_group);

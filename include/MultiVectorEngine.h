@@ -55,6 +55,12 @@ class MultiVectorEngine : public BaseEngine {
            milvus::TopKQueryResult& topk_query_results) override;
 
     Status
+    SearchBase(const std::string& collection_name, const std::vector<float>& weight,
+           const std::vector<RowEntity>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) override;
+
+    Status
     SearchBatch(const std::string& collection_name, const std::vector<float>& weight,
            const std::vector<RowEntity>& entity_array,
            int64_t topk, nlohmann::json& extra_params,

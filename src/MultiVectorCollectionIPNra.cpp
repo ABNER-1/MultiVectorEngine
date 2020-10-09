@@ -151,6 +151,16 @@ MultiVectorCollectionIPNra::SearchBatch(const std::vector<float>& weight,
 }
 
 Status
+MultiVectorCollectionIPNra::SearchBase(const std::vector<float>& weight,
+                                       const std::vector<std::vector<milvus::Entity>>& entity_array,
+                                       int64_t topk,
+                                       nlohmann::json& extra_params,
+                                       milvus::TopKQueryResult& topk_query_results) {
+
+    std::cout << "not implement yet!" << std::endl;
+}
+
+Status
 MultiVectorCollectionIPNra::Search(const std::vector<float>& weight,
                                    const std::vector<RowEntity>& entity_array,
                                    int64_t topk, nlohmann::json& extra_params,
