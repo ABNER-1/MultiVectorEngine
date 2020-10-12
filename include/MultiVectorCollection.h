@@ -30,6 +30,9 @@ class MultiVectorCollection {
     Delete(const std::vector<int64_t>& id_arrays) = 0;
 
     virtual Status
+    HasCollection() = 0;
+
+    virtual Status
     CreateIndex(milvus::IndexType index_type, const std::string& extra_params) = 0;
 
     virtual Status
@@ -40,6 +43,12 @@ class MultiVectorCollection {
 
     virtual Status
     Search(const std::vector<float>& weight,
+           const std::vector<std::vector<milvus::Entity>>& entity_array,
+           int64_t topk, nlohmann::json& extra_params,
+           milvus::TopKQueryResult& topk_query_results) = 0;
+
+    virtual Status
+    SearchBase(const std::vector<float>& weight,
            const std::vector<std::vector<milvus::Entity>>& entity_array,
            int64_t topk, nlohmann::json& extra_params,
            milvus::TopKQueryResult& topk_query_results) = 0;

@@ -24,6 +24,18 @@ MultiVectorCollectionIPNra::CreateCollection(const std::vector<int64_t>& dimensi
 }
 
 Status
+MultiVectorCollectionIPNra::HasCollection() {
+    bool has_collection = false;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        has_collection = conn_ptr_->HasCollection(child_collection_names_[i]);
+    }
+    if (has_collection)
+        return Status::OK();
+    else
+        return Status(StatusCode::UnknownError, "has no collection");
+}
+
+Status
 MultiVectorCollectionIPNra::DropCollection() {
     for (auto& child_collection_name: child_collection_names_) {
         auto status = conn_ptr_->DropCollection(child_collection_name);
@@ -137,6 +149,16 @@ MultiVectorCollectionIPNra::SearchBatch(const std::vector<float>& weight,
                                    milvus::TopKQueryResult& topk_query_results) {
     std::cout << "not implement yet!" << std::endl;
     return Status::OK();
+}
+
+Status
+MultiVectorCollectionIPNra::SearchBase(const std::vector<float>& weight,
+                                       const std::vector<std::vector<milvus::Entity>>& entity_array,
+                                       int64_t topk,
+                                       nlohmann::json& extra_params,
+                                       milvus::TopKQueryResult& topk_query_results) {
+
+    std::cout << "not implement yet!" << std::endl;
 }
 
 Status

@@ -9,6 +9,7 @@
 #include "nlohmann/json.hpp"
 #include <omp.h>
 #include "utils.h"
+#include "Utils.h"
 
 using json = nlohmann::json;
 
@@ -30,39 +31,7 @@ int topk = 10;
 int precision = 6;
 bool use_base_query;
 
-template<typename MTYPE>
-using DISTFUNC = MTYPE(*)(const void *, const void *, const void *);
-
-static float
-InnerProduct(const void *pVect1, const void *pVect2, const void *qty_ptr) {
-    size_t qty = *((size_t *) qty_ptr);
-    float res = 0;
-    for (unsigned i = 0; i < qty; i++) {
-        res += ((float *) pVect1)[i] * ((float *) pVect2)[i];
-    }
-    return (-res);
-}
-
-static float
-L2Sqr(const void *pVect1, const void *pVect2, const void *qty_ptr) {
-    //return *((float *)pVect2);
-    size_t qty = *((size_t *) qty_ptr);
-    float res = 0;
-    for (unsigned i = 0; i < qty; i++) {
-        float t = ((float *) pVect1)[i] - ((float *) pVect2)[i];
-        res += t * t;
-    }
-    return (res);
-}
-
-DISTFUNC<float> distfunc;
-
-struct Compare {
-    constexpr bool operator()(std::pair<float, size_t> const &a,
-                              std::pair<float, size_t> const &b) const noexcept {
-        return a.first < b.first;
-    }
-};
+milvus::multivector::DISTFUNC<float> distfunc;
 
 void Read(std::vector<milvus::multivector::RowEntity> &raw_data, std::ifstream &f, size_t thread_num, size_t read_rows) {
 //    std::cout.precision(8);
@@ -150,7 +119,7 @@ void LoadQuery(std::vector<milvus::multivector::RowEntity> &query) {
 
 void Search(const std::vector<milvus::multivector::RowEntity> &raw, const std::vector<milvus::multivector::RowEntity> &query, milvus::QueryResult &result, size_t q_id) {
 
-    std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, Compare> result_set;
+    std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, milvus::multivector::Compare> result_set;
     for (auto i = 0; i < rows; ++ i) {
         float dist = 0;
         for (auto j = 0; j < vec_groups; ++ j) {
@@ -197,10 +166,10 @@ bool get_config() {
         topk = config["topk"];
         precision = config["precision"];
         if (config["metric_type"] == "IP") {
-            distfunc = InnerProduct;
+            distfunc = milvus::multivector::InnerProduct;
             std::cout << "metric_type = " << config["metric_type"] << std::endl;
         } else if (config["metric_type"] == "L2") {
-            distfunc = L2Sqr;
+            distfunc = milvus::multivector::L2Sqr;
             std::cout << "metric_type = " << config["metric_type"] << std::endl;
         } else {
             std::cout << "invalid metric_type from config file: " << config["metric_type"] << std::endl;

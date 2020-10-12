@@ -3,6 +3,8 @@
 #include "Utils.h"
 #include <omp.h>
 #include <fstream>
+#include <set>
+#include <queue>
 #include "MultiVectorCollectionL2.h"
 
 
@@ -26,6 +28,17 @@ MultiVectorCollectionL2::CreateCollection(const std::vector<int64_t> &dimensions
     return Status::OK();
 }
 
+Status
+MultiVectorCollectionL2::HasCollection() {
+    bool has_collection = false;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        has_collection = conn_ptr_->HasCollection(child_collection_names_[i]);
+    }
+    if (has_collection)
+        return Status::OK();
+    else
+        return Status(StatusCode::UnknownError, "has no collection");
+}
 
 Status
 MultiVectorCollectionL2::DropCollection() {
@@ -149,9 +162,9 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         }
         fout.close();
     }
-//    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
 //    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
-    Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+//    Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
     if (save_) {
         std::cout << "save nra results..." << std::endl;
         std::ofstream fout("/tmp/cmp/nra_l2_hnsw_16_100_4096_id_only.txt", std::ios::app);
@@ -162,6 +175,115 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         fout.close();
     }
     return stat;
+}
+
+Status
+MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
+                                    const std::vector<milvus::Entity>& entity_query,
+                                    int64_t topk,
+                                    const std::string& extra_params,
+                                    QueryResult &query_results,
+                                    size_t qid) {
+
+    static int cnt = 0;
+    std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
+    std::vector<std::string> partition_tags;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        std::vector<milvus::Entity> container;
+        container.emplace_back(entity_query[i]);
+        auto status = conn_ptr_->Search(child_collection_names_[i], partition_tags, container, topk, extra_params, tqrs[i]);
+        if (!status.ok())
+            return status;
+        std::vector<milvus::Entity>().swap(container);
+    }
+    auto mx_size = tqrs[0][0].ids.size();
+    for (auto i = 1; i < child_collection_names_.size(); ++ i) {
+        mx_size = mx_size < tqrs[i][0].ids.size() ? tqrs[i][0].ids.size() : mx_size;
+    }
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        if (tqrs[i][0].ids.size() < mx_size) {
+            tqrs[i][0].ids.resize(mx_size, -1);
+            tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
+        }
+    }
+    auto cal_baseline = [&]() {
+	std::vector<int64_t> dims = {1024, 1024};
+	std::chrono::high_resolution_clock::time_point ts, te;
+        std::set<int64_t> target_ids;
+        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+            for (auto j = 0; j < mx_size; ++ j) {
+                if (tqrs[i][0].ids[j] > 0)
+                    target_ids.emplace(tqrs[i][0].ids[j]);
+            }
+        }
+        std::vector<int64_t> tids;
+        for (auto &id : target_ids) {
+            tids.push_back(id);
+        }
+        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
+	ts = std::chrono::high_resolution_clock::now();
+        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
+        }
+	te = std::chrono::high_resolution_clock::now();
+	auto get_dur = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+	if (!cnt)
+		std::cout << "GetEntityByID costs: " << get_dur << " ms." << std::endl;
+
+        milvus::multivector::DISTFUNC<float> distfunc = milvus::multivector::L2Sqr;
+        std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, Compare> result_set;
+
+        for (auto i = 0; i < entities[0].size(); ++ i) {
+            float dist = 0;
+            for (auto j = 0; j < child_collection_names_.size(); j ++) {
+                float d = distfunc(entity_query[j].float_data.data(), entities[j][i].float_data.data(), &dims[j]);
+                dist += d * weight[j];
+            }
+            result_set.emplace(dist, tids[i]);
+            if (result_set.size() > topk)
+                result_set.pop();
+        }
+        query_results.ids.resize(topk);
+        query_results.distances.resize(topk);
+        size_t res_num = result_set.size();
+        while (!result_set.empty()) {
+            res_num --;
+            query_results.ids[res_num] = result_set.top().second;
+            query_results.distances[res_num] = result_set.top().first;
+            result_set.pop();
+        }
+        return Status::OK();
+    };
+    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+//    Status stat = cal_baseline();
+
+//    Status stat = cal_baseline();
+//    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+//    Status stat = ONRAL2(tqrs, query_results, weight, topk, qid) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    cnt ++;
+    return stat;
+}
+
+Status
+MultiVectorCollectionL2::SearchBase(const std::vector<float>& weight,
+                                    const std::vector<std::vector<milvus::Entity>>& entity_array,
+                                    int64_t topk,
+                                    nlohmann::json& extra_params,
+                                    milvus::TopKQueryResult& topk_query_results) {
+    topk_query_results.resize(entity_array.size());
+    topks.clear();
+    save_ = false;
+#pragma omp parallel for
+    for (auto q = 0; q < entity_array.size(); ++ q) {
+        if (extra_params.contains("ef")) {
+            if (extra_params["ef"] < topk)
+                extra_params["ef"] = topk;
+        }
+        auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], 0);
+        topks.push_back((int)(topk));
+    }
+
+    return Status::OK();
 }
 
 Status
@@ -178,8 +300,8 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
 #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 2048);
-        threshold = 2048;
+        tpk = std::max(int(topk), 4096);
+        threshold = 4096;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);
