@@ -2,6 +2,8 @@
 #include "Utils.h"
 #include "MultiVectorCollectionIPNra.h"
 #include <omp.h>
+#include <set>
+#include <queue>
 
 namespace milvus {
 namespace multivector {
@@ -11,6 +13,7 @@ MultiVectorCollectionIPNra::CreateCollection(const std::vector<int64_t>& dimensi
                                              const std::vector<int64_t>& index_file_sizes) {
     milvus::CollectionParam cp;
     cp.metric_type = metric_type_;
+    dimensions_ = dimensions;
     for (auto i = 0; i < dimensions.size(); ++i) {
         child_collection_names_.emplace_back(GenerateChildCollectionName(i));
         cp.collection_name = child_collection_names_[i];
@@ -152,13 +155,98 @@ MultiVectorCollectionIPNra::SearchBatch(const std::vector<float>& weight,
 }
 
 Status
+MultiVectorCollectionIPNra::SearchImpl(const std::vector<float>& weight,
+                                    const std::vector<milvus::Entity>& entity_query,
+                                    int64_t topk, const std::string& extra_params,
+                                    QueryResult &query_results) {
+
+    static int cnt = 0;
+    std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
+    std::vector<std::string> partition_tags;
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        std::vector<milvus::Entity> container;
+        container.emplace_back(entity_query[i]);
+        auto status = conn_ptr_->Search(child_collection_names_[i], partition_tags, container, topk, extra_params, tqrs[i]);
+        if (!status.ok())
+            return status;
+        std::vector<milvus::Entity>().swap(container);
+    }
+    auto mx_size = tqrs[0][0].ids.size();
+    for (auto i = 1; i < child_collection_names_.size(); ++ i) {
+        mx_size = mx_size < tqrs[i][0].ids.size() ? tqrs[i][0].ids.size() : mx_size;
+    }
+    for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        if (tqrs[i][0].ids.size() < mx_size) {
+            tqrs[i][0].ids.resize(mx_size, -1);
+            tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
+        }
+    }
+    auto cal_baseline = [&]() {
+        std::set<int64_t> target_ids;
+        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+            for (auto j = 0; j < mx_size; ++ j) {
+                if (tqrs[i][0].ids[j] > 0)
+                    target_ids.emplace(tqrs[i][0].ids[j]);
+            }
+        }
+        std::vector<int64_t> tids;
+        for (auto &id : target_ids) {
+            tids.push_back(id);
+        }
+        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
+        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
+        }
+
+        milvus::multivector::DISTFUNC<float> distfunc = milvus::multivector::InnerProduct;
+        std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, Compare> result_set;
+
+        for (auto i = 0; i < entities[0].size(); ++ i) {
+            float dist = 0;
+            for (auto j = 0; j < child_collection_names_.size(); j ++) {
+                float d = distfunc(entity_query[j].float_data.data(), entities[j][i].float_data.data(), &dimensions_[j]);
+                dist += d * weight[j];
+            }
+            result_set.emplace(dist, i);
+            if (result_set.size() > topk)
+                result_set.pop();
+        }
+        query_results.ids.resize(topk);
+        query_results.distances.resize(topk);
+        size_t res_num = result_set.size();
+        while (!result_set.empty()) {
+            res_num --;
+            query_results.ids[res_num] = result_set.top().second;
+            query_results.distances[res_num] = result_set.top().first * -1;
+            result_set.pop();
+        }
+        return Status::OK();
+    };
+
+    return cal_baseline();
+}
+
+
+Status
 MultiVectorCollectionIPNra::SearchBase(const std::vector<float>& weight,
                                        const std::vector<std::vector<milvus::Entity>>& entity_array,
                                        int64_t topk,
                                        nlohmann::json& extra_params,
                                        milvus::TopKQueryResult& topk_query_results) {
+    topk_query_results.resize(entity_array.size());
+    topks.clear();
+    bool save_ = false;
+    #pragma omp parallel for
+    for (auto q = 0; q < entity_array.size(); ++ q) {
+        if (extra_params.contains("ef")) {
+            if (extra_params["ef"] < topk)
+                extra_params["ef"] = topk;
+        }
+        auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q]);
+        topks.push_back((int)(topk));
+    }
 
-    std::cout << "not implement yet!" << std::endl;
+    return Status::OK();
 }
 
 Status

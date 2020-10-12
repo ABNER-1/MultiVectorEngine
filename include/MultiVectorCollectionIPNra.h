@@ -66,6 +66,12 @@ class MultiVectorCollectionIPNra : public MultiVectorCollection {
                int64_t topk, const std::string& extra_params,
                QueryResult& query_results,
                int64_t tpk);
+
+    Status
+    SearchImpl(const std::vector<float> &weight,
+               const std::vector<milvus::Entity> &entity_query,
+               int64_t topk, const std::string &extra_params,
+               QueryResult &query_results);
 };
 
 using MultiVectorCollectionIPNraPtr = std::shared_ptr<MultiVectorCollectionIPNra>;
