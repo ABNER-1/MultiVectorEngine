@@ -13,6 +13,7 @@ MultiVectorCollectionIPNra::CreateCollection(const std::vector<int64_t>& dimensi
                                              const std::vector<int64_t>& index_file_sizes) {
     milvus::CollectionParam cp;
     cp.metric_type = metric_type_;
+    dimensions_ = dimensions;
     for (auto i = 0; i < dimensions.size(); ++i) {
         child_collection_names_.emplace_back(GenerateChildCollectionName(i));
         cp.collection_name = child_collection_names_[i];

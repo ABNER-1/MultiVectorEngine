@@ -22,7 +22,7 @@
   "nb": 238459,
   "precision": 18,
   "metric_type": "IP",
-  "strategy": "default",
+  "strategy": "nra",
   "ivf_result_prefix": "./ip-recipe/ivf1/ip_result",
   "hnsw_result_prefix": "./ip-recipe/hnsw1/ip_result",
   "baseline_result": "./ip-recipe/baseline.txt",
