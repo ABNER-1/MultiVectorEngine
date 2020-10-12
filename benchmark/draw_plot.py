@@ -1,6 +1,8 @@
 import os
 import numpy
 import itertools
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 metrics = {
@@ -199,35 +201,32 @@ def get_metric_data(data_dir, baseline_file, name):
     metric_datas = []
     for result_file in result_files:
         recall, qps = calc_recall(result_file, baseline_file)
-        metric_datas.append(("useless", name, recall, qps))
+        metric_datas.append((result_file, name, recall, qps))
     metric_datas = remove_useless_point(metric_datas)
     print(name, metric_datas)
     return metric_datas
 
 
 def draw_ip_recipe(image_name):
-    linestyle = create_linestyles([ivf_name, hnsw_name,
-                                   nra_ivf_name, nra_hnsw_name,
+    nra_baseline_name="NRA Baseline"
+    linestyle = create_linestyles([ivf_name, hnsw_name, nra_baseline_name,
                                    nra_ivf_omp_name, nra_hnsw_omp_name])
-    baseline_file = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/baseline.txt"
-    ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/ivf"
-    hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/hnsw"
-
-    nra_ivf_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-ivf"
-    nra_hnsw_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-hnsw"
-    nra_ivf_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-ivf2"
-    nra_hnsw_omp_dir = "/home/abner/workspace/MultiVector/cmake-build-debug/test/ip-recipe/nra-hnsw2"
+    baseline_file = "/root/ip-recipe/baseline.txt"
+    ivf_dir = "/root/ip-recipe/ivf"
+    hnsw_dir = "/root/ip-recipe/hnsw"
+    nra_ivf_omp_dir = "/root/ip-recipe/nra-ivf"
+    nra_hnsw_omp_dir = "/root/ip-recipe/nra-hnsw"
+    nra_baseline_dir = "/root/ip-recipe/nra-baseline"
 
     ivf_data = get_metric_data(ivf_dir, baseline_file, ivf_name)
     hnsw_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
-    nra_ivf_data = get_metric_data(nra_ivf_dir, baseline_file, nra_ivf_name)
-    nra_hnsw_data = get_metric_data(nra_hnsw_dir, baseline_file, nra_hnsw_name)
     nra_omp_ivf_data = get_metric_data(nra_ivf_omp_dir, baseline_file, nra_ivf_omp_name)
     nra_omp_hnsw_data = get_metric_data(nra_hnsw_omp_dir, baseline_file, nra_hnsw_name)
+    nra_baseline_data = get_metric_data(nra_baseline_dir, baseline_file, nra_baseline_name)
 
     data = {ivf_name: ivf_data, hnsw_name: hnsw_data,
-            nra_ivf_name: nra_ivf_data, nra_hnsw_name: nra_hnsw_data,
             nra_ivf_omp_name: nra_omp_ivf_data,
+            nra_baseline_name: nra_baseline_data,
             nra_hnsw_omp_name: nra_omp_hnsw_data}
 
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
@@ -351,6 +350,6 @@ if __name__ == "__main__":
     nra_ivf_omp_name = "NRA IVF-Flat with openMP"
     nra_hnsw_omp_name = "NRA HNSW with openMP"
 
-    # draw_ip_recipe("./ip_result_compare.png")
+    draw_ip_recipe("./ip_result_compare.png")
     # draw_ip_glove("./ip_result_glove.png")
-    draw_l2("../results/pngs/l2_result_more_pts_55_2.png")
+    #draw_l2("../results/pngs/l2_result_more_pts_55_2.png")
