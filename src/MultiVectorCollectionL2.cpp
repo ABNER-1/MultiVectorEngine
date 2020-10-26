@@ -141,6 +141,7 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
     for (auto i = 1; i < child_collection_names_.size(); ++ i) {
         mx_size = mx_size < tqrs[i][0].ids.size() ? tqrs[i][0].ids.size() : mx_size;
     }
+    std::cout << "qid = " << qid << ", mx_size = " << mx_size << std::endl;
     for (auto i = 0; i < child_collection_names_.size(); ++ i) {
         if (tqrs[i][0].ids.size() < mx_size) {
             tqrs[i][0].ids.resize(mx_size, -1);
@@ -183,7 +184,8 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
                                     int64_t topk,
                                     const std::string& extra_params,
                                     QueryResult &query_results,
-                                    size_t qid) {
+                                    size_t qid,
+				    const std::vector<RowEntity> &raw_data) {
 
     static int cnt = 0;
     std::vector<TopKQueryResult> tqrs(child_collection_names_.size());
@@ -220,23 +222,23 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         for (auto &id : target_ids) {
             tids.push_back(id);
         }
-        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
-	ts = std::chrono::high_resolution_clock::now();
-        for (auto i = 0; i < child_collection_names_.size(); ++ i) {
-            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
-        }
-	te = std::chrono::high_resolution_clock::now();
-	auto get_dur = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
-	if (!cnt)
-		std::cout << "GetEntityByID costs: " << get_dur << " ms." << std::endl;
+        //std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
+	//ts = std::chrono::high_resolution_clock::now();
+        //for (auto i = 0; i < child_collection_names_.size(); ++ i) {
+        //    conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
+        //}
+	//te = std::chrono::high_resolution_clock::now();
+	//auto get_dur = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+	//if (!cnt)
+	//	std::cout << "GetEntityByID costs: " << get_dur << " ms." << std::endl;
 
         milvus::multivector::DISTFUNC<float> distfunc = milvus::multivector::L2Sqr;
         std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, Compare> result_set;
 
-        for (auto i = 0; i < entities[0].size(); ++ i) {
+        for (auto i = 0; i < tids.size(); ++ i) {
             float dist = 0;
             for (auto j = 0; j < child_collection_names_.size(); j ++) {
-                float d = distfunc(entity_query[j].float_data.data(), entities[j][i].float_data.data(), &dims[j]);
+                float d = distfunc(entity_query[j].float_data.data(), raw_data[tids[i]][j].float_data.data(), &dims[j]);
                 dist += d * weight[j];
             }
             result_set.emplace(dist, tids[i]);
@@ -254,8 +256,8 @@ MultiVectorCollectionL2::SearchImpl(const std::vector<float>& weight,
         }
         return Status::OK();
     };
-    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
-//    Status stat = cal_baseline();
+//    Status stat = NoRandomAccessAlgorithmL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
+    Status stat = cal_baseline();
 
 //    Status stat = cal_baseline();
 //    Status stat = TAL2(tqrs, query_results, weight, topk) ? Status::OK() : Status(StatusCode::UnknownError, "recall failed!");
@@ -269,7 +271,8 @@ MultiVectorCollectionL2::SearchBase(const std::vector<float>& weight,
                                     const std::vector<std::vector<milvus::Entity>>& entity_array,
                                     int64_t topk,
                                     nlohmann::json& extra_params,
-                                    milvus::TopKQueryResult& topk_query_results) {
+                                    milvus::TopKQueryResult& topk_query_results,
+				    const std::vector<milvus::multivector::RowEntity> &row_data) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
     save_ = false;
@@ -279,7 +282,7 @@ MultiVectorCollectionL2::SearchBase(const std::vector<float>& weight,
             if (extra_params["ef"] < topk)
                 extra_params["ef"] = topk;
         }
-        auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], 0);
+        auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], 0, row_data);
         topks.push_back((int)(topk));
     }
 
@@ -300,8 +303,8 @@ MultiVectorCollectionL2::Search(const std::vector<float> &weight,
 #pragma omp parallel for
     for (auto q = 0; q < entity_array.size(); ++ q) {
         int64_t threshold, tpk;
-        tpk = std::max(int(topk), 4096);
-        threshold = 4096;
+        tpk = std::max(int(topk), 2048);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk << 1);

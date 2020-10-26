@@ -1,1 +1,0 @@
-/usr/bin/c++   -fopenmp    CMakeFiles/MultiVector.dir/main.cpp.o  -o MultiVector   -L/root/workspace/MultiVectorEngine/sdk  -Wl,-rpath,/root/workspace/MultiVectorEngine/sdk:/root/workspace/MultiVectorEngine/cmake/src src/libmulti_vector.so -lmilvus_sdk -lpthread 

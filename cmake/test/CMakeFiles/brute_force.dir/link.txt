@@ -1,1 +1,0 @@
-/usr/bin/c++   -fopenmp    CMakeFiles/brute_force.dir/brute_force.cpp.o CMakeFiles/brute_force.dir/utils.cpp.o  -o brute_force   -L/root/workspace/MultiVectorEngine/sdk  -Wl,-rpath,/root/workspace/MultiVectorEngine/sdk:/root/workspace/MultiVectorEngine/cmake/src ../src/libmulti_vector.so -lmilvus_sdk -lgomp -lpthread 

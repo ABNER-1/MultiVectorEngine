@@ -1,1 +1,0 @@
-/usr/bin/c++   -fopenmp    CMakeFiles/ip_nra_performance.dir/ip_nra_performance.cpp.o  -o ip_nra_performance   -L/root/workspace/MultiVectorEngine/sdk  -Wl,-rpath,/root/workspace/MultiVectorEngine/sdk:/root/workspace/MultiVectorEngine/cmake/src ../src/libmulti_vector.so -lmilvus_sdk -lpthread 

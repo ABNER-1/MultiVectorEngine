@@ -232,7 +232,8 @@ MultiVectorCollectionIPNra::SearchBase(const std::vector<float>& weight,
                                        const std::vector<std::vector<milvus::Entity>>& entity_array,
                                        int64_t topk,
                                        nlohmann::json& extra_params,
-                                       milvus::TopKQueryResult& topk_query_results) {
+                                       milvus::TopKQueryResult& topk_query_results,
+				       const std::vector<milvus::multivector::RowEntity> &row_data) {
     topk_query_results.resize(entity_array.size());
     topks.clear();
     bool save_ = false;

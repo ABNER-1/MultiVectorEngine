@@ -14,7 +14,7 @@ auto assert_status = [](milvus::Status status) {
     }
 };
 
-std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engine) {
+std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engine, std::vector<RowEntity> &row_entities) {
 
     // create collection and insert data, once per test, save time
     srand((unsigned)time(nullptr));
@@ -55,7 +55,6 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
         assert_status(engine->CreateCollection(collection_name, milvus::MetricType::L2, dim, index_file_sizes));
 
         std::vector<std::vector<int64_t>> all_id_arrays;
-        std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
         std::vector<int64_t> ids;
         generateIds(vector_num, ids, -1);
         int64_t limit_insert = 256 * 1024 * 1024;
@@ -108,7 +107,7 @@ std::string CreateCollection(nlohmann::json &config, MultiVectorEnginePtr &engin
     return collection_name;
 }
 
-void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
+void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name, std::vector<RowEntity> &row_entities) {
     std::string result_prefix = config.at("ivf_result_prefix");
     std::vector<int> nlists = {1024, 2048, 4096};
     //std::vector<int> nlists = {4096};
@@ -119,11 +118,11 @@ void TestIVFFLAT(nlohmann::json &config, MultiVectorEnginePtr &engine, std::stri
         std::cout << "build index nlist = " << nlist << std::endl;
         nlohmann::json search_args = {};
         testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}}, search_args,
-                      config, milvus::MetricType::L2, collection_name, result_prefix, nprobes, cnt);
+                      config, milvus::MetricType::L2, collection_name, result_prefix, nprobes, cnt, row_entities);
     }
 }
 
-void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name) {
+void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string &collection_name, std::vector<RowEntity> &row_entities) {
     std::string result_prefix = config.at("hnsw_result_prefix");
 //    std::vector<int> ms = {4, 8, 12, 16, 24};
     std::vector<int> ms = {4, 8, 12, 16, 24};
@@ -139,7 +138,7 @@ void TestHNSW(nlohmann::json &config, MultiVectorEnginePtr &engine, std::string 
             std::cout << "build index M = " << m << ", efConstruction = " << efc << std::endl;
             nlohmann::json search_args = {};
             testIndexType(engine, milvus::IndexType::HNSW, {{"M", m}, {"efConstruction", efc}}, search_args,
-                          config, milvus::MetricType::L2, collection_name, result_prefix, efss, cnt);
+                          config, milvus::MetricType::L2, collection_name, result_prefix, efss, cnt, row_entities);
         }
     }
 }
@@ -161,8 +160,11 @@ main(int argc, char **argv) {
     std::string port = "19530";
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
 
-    auto collection_name = CreateCollection(config, engine);
-    TestIVFFLAT(config, engine, collection_name);
+    int vector_num = config.at("nb");
+    int vec_group_num = config.at("group_num");
+    std::vector<RowEntity> row_entities(vector_num, RowEntity(vec_group_num, milvus::Entity()));
+    auto collection_name = CreateCollection(config, engine, row_entities);
+    TestIVFFLAT(config, engine, collection_name, row_entities);
 //    TestHNSW(config, engine, collection_name);
 
 //    assert_status(engine->DropCollection(collection_name));

@@ -51,7 +51,8 @@ class MultiVectorCollection {
     SearchBase(const std::vector<float>& weight,
            const std::vector<std::vector<milvus::Entity>>& entity_array,
            int64_t topk, nlohmann::json& extra_params,
-           milvus::TopKQueryResult& topk_query_results) = 0;
+           milvus::TopKQueryResult& topk_query_results,
+	   const std::vector<milvus::multivector::RowEntity> &row_data) = 0;
 
     virtual Status
     SearchBatch(const std::vector<float>& weight,

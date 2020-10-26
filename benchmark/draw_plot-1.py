@@ -268,7 +268,9 @@ def draw_l2(image_name):
     linestyle = create_linestyles([
                                    "NRA4096_4096 IVFFLAT", "NRA4096_4096 HNSW",
                                    "NRA8192_8192 IVFFLAT", "NRA8192_8192 HNSW",
-                                   "NRA16384_16384 IVFFLAT", "NRA16384_16384 HNSW"
+                                   "NRA16384_16384 IVFFLAT", "NRA16384_16384 HNSW",
+                                   "BASELINE IVFFLAT", "STD-NRA HNSW", "STD-NRA IVFFLAT",
+                                   "STD-NRA-2048 HNSW", "STD-NRA-2048 IVFFLAT"
                                    ])
                                    # "NRA4096_4096 IVFFLAT-BATCH", "NRA4096_4096 HNSW-BATCH"])
     baseline_file = "/root/results/l2/baseline.txt"
@@ -278,6 +280,11 @@ def draw_l2(image_name):
     hnsw_dir2 = "/root/results/l2/hnsw/test2"
     ivf_dir3 = "/root/results/l2/ivfflat/test3"
     hnsw_dir3 = "/root/results/l2/hnsw/test3"
+    ivf_dir4 = "/root/results/l2/ivfflat/stdnra2"
+    hnsw_dir4 = "/root/results/l2/hnsw/stdnra2"
+    ivf_dir5 = "/root/results/l2/ivfflat/base"
+    ivf_dir6 = "/root/results/l2/ivfflat/stdnra3"
+    hnsw_dir6 = "/root/results/l2/hnsw/stdnra3"
 
     ivf_metric_data1 = get_metric_data(ivf_dir1 , baseline_file, "NRA8192_8192 IVFFLAT")
     hnsw_metric_data1 = get_metric_data(hnsw_dir1 , baseline_file, "NRA8192_8192 HNSW")
@@ -285,11 +292,19 @@ def draw_l2(image_name):
     hnsw_metric_data2 = get_metric_data(hnsw_dir2 , baseline_file, "NRA4096_4096 HNSW")
     ivf_metric_data3 = get_metric_data(ivf_dir3 , baseline_file, "NRA16384_16384 IVFFLAT")
     hnsw_metric_data3 = get_metric_data(hnsw_dir3 , baseline_file, "NRA16384_16384 HNSW")
+    ivf_metric_data4 = get_metric_data(ivf_dir4 , baseline_file, "STD-NRA IVFFLAT")
+    hnsw_metric_data4 = get_metric_data(hnsw_dir4 , baseline_file, "STD-NRA HNSW")
+    ivf_metric_data5 = get_metric_data(ivf_dir5 , baseline_file, "BASELINE IVFFLAT")
+    ivf_metric_data6 = get_metric_data(ivf_dir6 , baseline_file, "STD-NRA-2048 IVFFLAT")
+    hnsw_metric_data6 = get_metric_data(hnsw_dir6 , baseline_file, "STD-NRA-2048 HNSW")
    # data = {"L2 NRA IVF-Flat": ivf_metric_data, "L2 NRA HNSW": hnsw_metric_data}
     data = {
             "NRA8192_8192 IVFFLAT": ivf_metric_data1, "NRA8192_8192 HNSW": hnsw_metric_data1,
             "NRA4096_4096 IVFFLAT": ivf_metric_data2, "NRA4096_4096 HNSW": hnsw_metric_data2,
-            "NRA16384_16384 IVFFLAT": ivf_metric_data3, "NRA16384_16384 HNSW": hnsw_metric_data3
+            "NRA16384_16384 IVFFLAT": ivf_metric_data3, "NRA16384_16384 HNSW": hnsw_metric_data3,
+            "STD-NRA IVFFLAT": ivf_metric_data4, "STD-NRA HNSW": hnsw_metric_data4,
+            "STD-NRA-2048 IVFFLAT": ivf_metric_data6, "STD-NRA-2048 HNSW": hnsw_metric_data6,
+            "BASELINE IVFFLAT": ivf_metric_data5
     }
     create_plot(all_data=data, raw=False, x_log=False, y_log=True,
                 xn='k-nn', yn='qps', fn_out=image_name,
@@ -306,4 +321,4 @@ if __name__ == "__main__":
 
     # draw_ip_recipe("./ip_result_compare.png")
     # draw_ip_glove("./ip_result_glove.png")
-    draw_l2("/root/results/pngs/l2/l2_result_test5.png")
+    draw_l2("/root/results/pngs/l2/l2_result_final_test3.png")

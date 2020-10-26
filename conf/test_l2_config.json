@@ -21,8 +21,8 @@
   "topk": 50,
   "precision": 18,
   "metric_type": "L2",
-  "ivf_result_prefix": "/root/results/l2/ivfflat/base4096/result",
-  "hnsw_result_prefix": "/root/results/l2/hnsw/base4096/result",
+  "ivf_result_prefix": "/root/results/l2/ivfflat/ibase/result",
+  "hnsw_result_prefix": "/root/results/l2/hnsw/ibase/result",
   "baseline_result": "/root/results/l2/baseline.txt",
   "use_base_query": false
 }

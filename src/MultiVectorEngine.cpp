@@ -79,9 +79,10 @@ MultiVectorEngine::SearchBase(const std::string& collection_name,
                           const std::vector<float>& weight,
                           const std::vector<RowEntity>& entity_array,
                           int64_t topk, nlohmann::json& extra_params,
-                          milvus::TopKQueryResult& topk_query_results) {
+                          milvus::TopKQueryResult& topk_query_results,
+	   const std::vector<milvus::multivector::RowEntity> &row_data) {
     return getOrFetchCollectionPtr(collection_name)->SearchBase(weight, entity_array, topk,
-                                                            extra_params, topk_query_results);
+                                                            extra_params, topk_query_results, row_data);
 }
 
 Status

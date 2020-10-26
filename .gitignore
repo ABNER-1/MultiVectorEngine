@@ -15,3 +15,5 @@ cmake_build
 *.pyc
 *.swp
 
+cmake/*
+benchmark
