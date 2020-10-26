@@ -7,11 +7,11 @@
 #        milvus_sdk
 #        pthread)
 #
-#add_executable(test_ipnra_baseline test_ipnra_baseline.cpp utils.cpp)
-#target_link_libraries(test_ipnra_baseline
-#        multi_vector
-#        milvus_sdk
-#        pthread)
+add_executable(test_ip_baseline test_ip_baseline.cpp utils.cpp)
+target_link_libraries(test_ip_baseline
+        multi_vector
+        milvus_sdk
+        pthread)
 #
 #add_executable(test_nra test_nra.cpp)
 #target_link_libraries(test_nra
@@ -25,13 +25,13 @@
 #        multi_vector
 #        milvus_sdk
 #        pthread)
-
-add_executable(test_l2 test_l2.cpp utils.cpp)
-
-target_link_libraries(test_l2
-        multi_vector
-        milvus_sdk
-        pthread)
+#
+#add_executable(test_l2 test_l2.cpp utils.cpp)
+#
+#target_link_libraries(test_l2
+#        multi_vector
+#        milvus_sdk
+#        pthread)
 
 #add_executable(test_gist_l2 test_gist_l2.cpp utils.cpp)
 #

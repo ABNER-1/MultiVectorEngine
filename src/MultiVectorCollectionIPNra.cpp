@@ -168,8 +168,9 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
     for (auto i = 0; i < child_collection_names_.size(); ++i) {
         std::vector<milvus::Entity> container;
         container.emplace_back(entity_query[i]);
+        int64_t search_topk = 50;
         auto status =
-            conn_ptr_->Search(child_collection_names_[i], partition_tags, container, topk, extra_params, tqrs[i]);
+            conn_ptr_->Search(child_collection_names_[i], partition_tags, container, search_topk, extra_params, tqrs[i]);
         if (!status.ok())
             return status;
         std::vector<milvus::Entity>().swap(container);
@@ -196,10 +197,10 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
         for (auto &id : target_ids) {
             tids.push_back(id);
         }
-        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
-        for (auto i = 0; i < child_collection_names_.size(); ++i) {
-            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
-        }
+//        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
+//        for (auto i = 0; i < child_collection_names_.size(); ++i) {
+//            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
+//        }
 
         milvus::multivector::DISTFUNC<float> distfunc = milvus::multivector::InnerProduct;
         std::priority_queue<std::pair<float, size_t>, std::vector<std::pair<float, size_t>>, Compare> result_set;

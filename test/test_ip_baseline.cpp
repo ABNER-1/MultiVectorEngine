@@ -156,7 +156,7 @@ main(int argc, char **argv) {
             nlohmann::json search_params = {{"nprobe", nprobe}};
             Search(engine, search_params, result_file_name, row_data);
             auto topks = engine->GetActualTopk(collection_name);
-            writeTopk(topks);
+//            writeTopk(topks);
         }
         DropIndex(engine);
     }
