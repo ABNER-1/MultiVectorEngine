@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <omp.h>
 
+
 using namespace milvus::multivector;
 namespace {
 //std::string ip = "192.168.1.147";
@@ -23,19 +24,20 @@ std::vector<float> weight;
 }
 
 void
-assert_status(milvus::Status&& status) {
+assert_status(milvus::Status &&status) {
     if (!status.ok()) {
         std::cout << " " << static_cast<int>(status.code()) << " " << status.message() << std::endl;
     }
 }
 
 void
-CreateCollection(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
+CreateCollection(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine) {
     assert_status(engine->CreateCollection(collection_name, metric, dim, index_file_sizes, strategy));
 }
 
 void
-Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
+Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine,
+       std::vector<milvus::multivector::RowEntity> &row_data) {
     int vector_size = ip_config.at("batch");
     int page_id = 0;
     bool end_flag = false;
@@ -48,6 +50,8 @@ Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
             readArraysFromSplitedData(file_names, dim, row_entities, vector_size, page_id, all_lines);
         std::vector<int64_t> id_arrays;
         generateIds(tmp_vector_num, id_arrays);
+        // copy row_data
+        row_data.insert(row_data.end(), row_entities.begin(), row_entities.end());
 
         assert_status(engine->Insert(collection_name, row_entities, id_arrays));
         std::cout << "Insert " << tmp_vector_num << " into milvus." << std::endl;
@@ -62,8 +66,8 @@ Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
 }
 
 void
-DropCollection(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
-    for (auto& id_arrays: all_id_arrays) {
+DropCollection(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine) {
+    for (auto &id_arrays: all_id_arrays) {
         assert_status(engine->Delete(collection_name, id_arrays));
     }
     engine->Flush(collection_name);
@@ -73,37 +77,38 @@ DropCollection(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) 
 }
 
 void
-CreateIndex(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
-            milvus::IndexType index_type, const nlohmann::json& index_json) {
+CreateIndex(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine,
+            milvus::IndexType index_type, const nlohmann::json &index_json) {
     using namespace milvus::multivector;
     assert_status(engine->CreateIndex(collection_name,
                                       index_type, index_json.dump()));
 }
 
 void
-DropIndex(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine) {
+DropIndex(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine) {
     using namespace milvus::multivector;
     assert_status(engine->DropIndex(collection_name));
 }
 
 void
-Search(std::shared_ptr<milvus::multivector::MultiVectorEngine>& engine,
-       nlohmann::json& query_json, const std::string& result_file_name) {
+Search(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine,
+       nlohmann::json &query_json, const std::string &result_file_name,
+       const std::vector<milvus::multivector::RowEntity> &row_data) {
     using namespace milvus::multivector;
     milvus::TopKQueryResult topk_result(nq);
     auto ts = std::chrono::high_resolution_clock::now();
-    assert_status(engine->SearchBase(collection_name, weight,
-                                 query_entities, topk, query_json, topk_result));
+    assert_status(engine->SearchBase(collection_name, weight, query_entities,
+                                     topk, query_json, topk_result, row_data));
     auto te = std::chrono::high_resolution_clock::now();
     auto search_duration = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
     writeBenchmarkResult(topk_result, result_file_name, search_duration, topk);
 }
 
 void
-writeTopk(const std::vector<int>& topks) {
+writeTopk(const std::vector<int> &topks) {
     std::ofstream out("./topk.txt", std::ofstream::out | std::ofstream::app);
     out << topks.size() << " ";
-    for (auto& tmp_topk : topks) {
+    for (auto &tmp_topk : topks) {
         out << tmp_topk << " ";
     }
     out << std::endl;
@@ -111,7 +116,7 @@ writeTopk(const std::vector<int>& topks) {
 }
 
 int
-main(int argc, char** argv) {
+main(int argc, char **argv) {
     using namespace milvus::multivector;
     std::string config_file = std::string(argv[1]);
     std::ifstream f_conf(config_file);
@@ -119,6 +124,7 @@ main(int argc, char** argv) {
     f_conf.close();
 
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
+    std::vector<milvus::multivector::RowEntity> row_data;
     {
         all_lines = ip_config.at("nb");
         nq = ip_config.at("nq");
@@ -134,7 +140,7 @@ main(int argc, char** argv) {
         }
     }
     CreateCollection(engine);
-    Insert(engine);
+    Insert(engine, row_data);
     ivf_result_prefix = ip_config.at("ivf_result_prefix");
     hnsw_result_prefix = ip_config.at("hnsw_result_prefix");
     std::vector<int> nlists = {1024};
@@ -148,7 +154,7 @@ main(int argc, char** argv) {
             std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
             auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
             nlohmann::json search_params = {{"nprobe", nprobe}};
-            Search(engine, search_params, result_file_name);
+            Search(engine, search_params, result_file_name, row_data);
             auto topks = engine->GetActualTopk(collection_name);
             writeTopk(topks);
         }
