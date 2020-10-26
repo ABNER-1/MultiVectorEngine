@@ -208,15 +208,15 @@ def get_metric_data(data_dir, baseline_file, name):
 
 
 def draw_ip_recipe(image_name):
-    nra_baseline_name="NRA Baseline"
+    nra_baseline_name="Baseline"
     linestyle = create_linestyles([ivf_name, hnsw_name, nra_baseline_name,
                                    nra_ivf_omp_name, nra_hnsw_omp_name])
-    baseline_file = "/root/ip-recipe/baseline.txt"
-    ivf_dir = "/root/ip-recipe/ivf"
-    hnsw_dir = "/root/ip-recipe/hnsw"
-    nra_ivf_omp_dir = "/root/ip-recipe/nra-ivf"
-    nra_hnsw_omp_dir = "/root/ip-recipe/nra-hnsw"
-    nra_baseline_dir = "/root/ip-recipe/nra-baseline"
+    baseline_file = "/data/ip-recipe/baseline.txt"
+    ivf_dir = "/data/ip-recipe/ivf"
+    hnsw_dir = "/data/ip-recipe/hnsw"
+    nra_ivf_omp_dir = "/data/ip-recipe/nra-ivf"
+    nra_hnsw_omp_dir = "/data/ip-recipe/nra-hnsw"
+    nra_baseline_dir = "/data/ip-recipe/nra-baseline"
 
     ivf_data = get_metric_data(ivf_dir, baseline_file, ivf_name)
     hnsw_data = get_metric_data(hnsw_dir, baseline_file, hnsw_name)
@@ -343,8 +343,8 @@ def draw_l2(image_name):
 
 
 if __name__ == "__main__":
-    ivf_name = "IVF-Flat"
-    hnsw_name = "HNSW"
+    ivf_name = "IVF-Flat with openMP"
+    hnsw_name = "HNSW with openMP"
     nra_ivf_name = "NRA IVF-Flat"
     nra_hnsw_name = "NRA HNSW"
     nra_ivf_omp_name = "NRA IVF-Flat with openMP"
