@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/data/vector/results_train/data_img.txt",
-    "/data/vector/results_train/data_rec.txt"
+    "/root/vectors/data_img.txt",
+    "/root/vectors/data_rec.txt"
   ],
   "query_data_locations": [
-    "/data/vector/results_test/data_img.txt",
-    "/data/vector/results_test/data_rec.txt"
+    "/root/vectors/query/data_img.txt",
+    "/root/vectors/query/data_rec.txt"
   ],
   "dimensions": [
     1024,
@@ -23,7 +23,7 @@
   "precision": 18,
   "metric_type": "IP",
   "strategy": "nra",
-  "ivf_result_prefix": "./ip-recipe/baseline50/ip_result",
+  "ivf_result_prefix": "/root/ip-recipe/nra-4096/ip_result",
   "hnsw_result_prefix": "./ip-recipe/baseline/ip_result",
   "baseline_result": "./ip-recipe/baseline.txt",
   "use_base_query": false
