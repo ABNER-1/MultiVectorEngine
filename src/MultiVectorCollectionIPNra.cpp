@@ -250,7 +250,6 @@ MultiVectorCollectionIPNra::SearchBase(const std::vector<float> &weight,
                 extra_params["ef"] = topk;
         }
         auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], row_data);
-        // topks.push_back((int) (topk));
     }
 
     return Status::OK();
@@ -266,8 +265,8 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
 #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 2048l);
-        threshold = 2048;
+        tpk = std::max(topk, 4096l);
+        threshold = 4096;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk * 2);
@@ -280,7 +279,7 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
             auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], tpk);
             succ_flag = stat.ok();
         } while (!succ_flag && tpk < threshold);
-        topks.push_back(tpk);
+        //topks.push_back(tpk);
     }
     return Status::OK();
 }
