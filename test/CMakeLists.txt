@@ -1,12 +1,12 @@
 
 
-#add_executable(test_ip test_ip.cpp utils.cpp)
-#
-#target_link_libraries(test_ip
-#        multi_vector
-#        milvus_sdk
-#        pthread)
-#
+add_executable(test_ip test_ip.cpp utils.cpp)
+
+target_link_libraries(test_ip
+        multi_vector
+        milvus_sdk
+        pthread)
+
 add_executable(test_ip_baseline test_ip_baseline.cpp utils.cpp)
 target_link_libraries(test_ip_baseline
         multi_vector
