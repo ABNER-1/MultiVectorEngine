@@ -151,11 +151,11 @@ main(int argc, char** argv) {
     Insert(engine);
     ivf_result_prefix = ip_config.at("ivf_result_prefix");
  //   hnsw_result_prefix = ip_config.at("hnsw_result_prefix");
-    std::vector<int> nlists = {4096};
+    std::vector<int> nlists = {1024, 2048, 8192};
     std::vector<int> nprobes =
         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
 
-    int number = 0;
+    int number = 100;
     for (auto nlist : nlists) {
         CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
         for (auto nprobe : nprobes) {

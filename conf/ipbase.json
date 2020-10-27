@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/root/vector/data_img.txt",
-    "/root/vector/data_rec.txt"
+    "/root/vectors/data_img.txt",
+    "/root/vectors/data_rec.txt"
   ],
   "query_data_locations": [
-    "/root/vector/query/data_img.txt",
-    "/root/vector/query/data_rec.txt"
+    "/root/vectors/query/data_img.txt",
+    "/root/vectors/query/data_rec.txt"
   ],
   "dimensions": [
     1024,
@@ -16,8 +16,8 @@
     0.5,
     0.5
   ],
-  "batch": 30000,
-  "nq": 1000,
+  "batch": 40000,
+  "nq": 10,
   "topk": 50,
   "nb": 880982,
   "precision": 18,
