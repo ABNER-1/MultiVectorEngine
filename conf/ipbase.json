@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/home/abner/vector/results_train/data_img.txt",
-    "/home/abner/vector/results_train/data_rec.txt"
+    "/data/vector/results_train/data_img.txt",
+    "/data/vector/results_train/data_rec.txt"
   ],
   "query_data_locations": [
-    "/home/abner/vector/results_test/data_img.txt",
-    "/home/abner/vector/results_test/data_rec.txt"
+    "/data/vector/results_test/data_img.txt",
+    "/data/vector/results_test/data_rec.txt"
   ],
   "dimensions": [
     1024,
@@ -16,10 +16,10 @@
     0.5,
     0.5
   ],
-  "batch": 20000,
+  "batch": 40000,
   "nq": 100,
   "topk": 50,
-  "nb": 100000,
+  "nb": 880982,
   "precision": 18,
   "metric_type": "IP",
   "strategy": "nra",

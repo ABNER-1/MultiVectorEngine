@@ -169,26 +169,3 @@ main(int argc, char **argv) {
 
 //    assert_status(engine->DropCollection(collection_name));
 }
-
-/*
- * //    nlohmann::json search_args = {{"nprobe", 80}};
-//    testIndexType(engine, milvus::IndexType::IVFFLAT, {{"nlist", 1024}}, search_args, config, milvus::MetricType::L2, collection_name);
-//    search_args = {{"ef", 500}};
-//    testIndexType(engine, milvus::IndexType::HNSW,
-//                  {{"M", 32}, {"efConstruction", 200}},
-//                  search_args, config, milvus::MetricType::L2, collection_name);
-
-
-//    testIndexType(engine, milvus::IndexType::FLAT, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
-//    testIndexType(engine, milvus::IndexType::IVFSQ8, {{"nlist", 1024}}, {{"nprobe", 20}}, config, milvus::MetricType::L2);
-//    testIndexType(engine, milvus::IndexType::IVFPQ,
-//                  {{"nlist", 1024}, {"m", 32}},
-//                  {{"nprobe", 20}}, config,
-//                  milvus::MetricType::L2);
-//    testIndexType(engine, milvus::IndexType::RNSG,
-//                  {{"search_length", 45}, {"out_degree", 50}, {"candidate_pool_size", 300}, {"knng", 100}},
-//                  {{"search_length", 100}}, config, milvus::MetricType::L2);
-//    testIndexType(engine, milvus::IndexType::ANNOY,
-//                  {{"n_trees", 8}},
-//                  {{"search_k", -1}}, config, milvus::MetricType::L2);
- */
