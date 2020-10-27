@@ -10,7 +10,7 @@ namespace {
 //std::string ip = "192.168.1.147";
 std::string ip = "127.0.0.1";
 std::string port = "19530";
-auto collection_name = "test_collection";
+auto collection_name = "test_collection1";
 std::string strategy = "default";
 auto metric = milvus::MetricType::IP;
 std::vector<std::vector<int64_t>> all_id_arrays;
@@ -53,6 +53,7 @@ Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine,
         // copy row_data
         row_data.insert(row_data.end(), row_entities.begin(), row_entities.end());
 
+	std::cout<< "row data size: " << row_data.size()<<std::endl;
         assert_status(engine->Insert(collection_name, row_entities, id_arrays));
         std::cout << "Insert " << tmp_vector_num << " into milvus." << std::endl;
         all_id_arrays.emplace_back(std::move(id_arrays));
@@ -60,6 +61,7 @@ Insert(std::shared_ptr<milvus::multivector::MultiVectorEngine> &engine,
     }
     engine->Flush(collection_name);
 
+    std::cout<< "row data size: " << row_data.size()<<std::endl;
     // generate query vector
     query_entities.resize(nq);
     readArraysFromSplitedData(test_file_names, dim, query_entities, nq, 0, nq);
@@ -124,7 +126,7 @@ main(int argc, char **argv) {
     f_conf.close();
 
     auto engine = std::make_shared<MultiVectorEngine>(ip, port);
-    std::vector<milvus::multivector::RowEntity> row_data;
+    std::vector<RowEntity> row_data;
     {
         all_lines = ip_config.at("nb");
         nq = ip_config.at("nq");
@@ -154,8 +156,10 @@ main(int argc, char **argv) {
             std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
             auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
             nlohmann::json search_params = {{"nprobe", nprobe}};
+	    std::cout<< "row data size: " << row_data.size()<<std::endl;
             Search(engine, search_params, result_file_name, row_data);
             auto topks = engine->GetActualTopk(collection_name);
+	    std::cout<< "row data size: " << row_data.size()<<std::endl;
 //            writeTopk(topks);
         }
         DropIndex(engine);
