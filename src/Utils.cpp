@@ -279,10 +279,10 @@ NoRandomAccessAlgorithmL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
 
 bool
 ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
-                          milvus::QueryResult& result,
-                          const std::vector<float>& weight,
-                          int64_t TopK,
-                          size_t qid) {
+       milvus::QueryResult& result,
+       const std::vector<float>& weight,
+       int64_t TopK,
+       size_t qid) {
     auto num_group = ng_nq_tpk.size();
     auto topk = ng_nq_tpk[0][qid].ids.size();
     std::vector<const int64_t*> p_ids(num_group, 0);
@@ -322,9 +322,9 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         }
     }
     size_t ub_id = topk - 1;
-    for (auto i = 0; i < nodes.size(); ++ i) {
+    for (auto i = 0; i < nodes.size(); ++i) {
         nodes[i].ub = nodes[i].lb;
-        for (auto j = 0; j < num_group; ++ j) {
+        for (auto j = 0; j < num_group; ++j) {
             if (!nodes[i].group_flags[j])
                 nodes[i].ub += weight[j] * 2;
         }
@@ -345,7 +345,7 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
 
     float min_unselected_lb = std::numeric_limits<float>::max();
     bool find_mul = false;
-    for (auto &node : nodes) {
+    for (auto& node : nodes) {
         if (!node.result_flag)
             min_unselected_lb = std::min(min_unselected_lb, node.lb), find_mul = true;
     }
@@ -356,12 +356,12 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
     auto tot_size = result_set.size();
     result.ids.resize(tot_size);
     result.distances.resize(tot_size);
-    tot_size --;
+    tot_size--;
     while (!result_set.empty()) {
         result.ids[tot_size] = nodes[result_set.top()].id;
         result.distances[tot_size] = nodes[result_set.top()].ub;
         result_set.pop();
-        tot_size --;
+        tot_size--;
     }
 
     return ret;
@@ -369,17 +369,19 @@ ONRAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
 
 //TA
 bool
-TAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
-                          milvus::QueryResult &result,
-                          const std::vector<float> &weight,
-                          int64_t TopK) {
+TAL2(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
+     milvus::QueryResult& result,
+     const std::vector<float>& weight,
+     int64_t TopK) {
     bool ret = false;
     auto num_group = ng_nq_tpk.size();
     auto topk = ng_nq_tpk[0][0].ids.size();
-    std::vector<const int64_t *> p_ids(num_group, 0);
-    std::vector<const float *> p_dists(num_group, 0);
+    std::vector<const int64_t*> p_ids(num_group, 0);
+    std::vector<const float*> p_dists(num_group, 0);
     std::unordered_map<size_t, std::pair<float, bool>> hash_tbl;
-    auto cmp = [&](std::pair<size_t, float> &a, std::pair<size_t, float> &b) { return a.second < b.second; };
+    auto cmp = [&](std::pair<size_t, float>& a, std::pair<size_t, float>& b) {
+        return a.second < b.second;
+    };
     std::priority_queue<std::pair<size_t, float>, std::vector<std::pair<size_t, float>>, decltype(cmp)> result_set(cmp);
     std::vector<float> sum_row(topk, 0.0);
 
@@ -387,8 +389,8 @@ TAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
     }
-    for (auto i = 0; i < topk; ++ i) {
-        for (auto j = 0; j < num_group; ++ j) {
+    for (auto i = 0; i < topk; ++i) {
+        for (auto j = 0; j < num_group; ++j) {
             if (p_ids[j][i] < 0)
                 continue;
             sum_row[i] += p_dists[j][i] * weight[j];
@@ -401,14 +403,14 @@ TAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         }
     }
 
-    for (auto i = 0; i < topk; ++ i) {
-        for (auto j = 0; j < num_group; ++ j) {
+    for (auto i = 0; i < topk; ++i) {
+        for (auto j = 0; j < num_group; ++j) {
             if (p_ids[j][i] < 0)
                 continue;
             auto target = hash_tbl.find(p_ids[j][i]);
             if (!target->second.second) {
                 if (result_set.size() < TopK || target->second.first < result_set.top().second)
-                target->second.second = true;
+                    target->second.second = true;
                 result_set.emplace(target->first, target->second.first);
                 if (result_set.size() > TopK) {
                     auto out = hash_tbl.find(result_set.top().first);
@@ -430,11 +432,111 @@ TAL2(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         result.ids[tot_size] = result_set.top().first;
         result.distances[tot_size] = result_set.top().second;
         result_set.pop();
-        tot_size ++;
+        tot_size++;
     }
     return ret;
 }
 
+bool
+StandardNRAIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
+              milvus::QueryResult& result,
+              const std::vector<float>& weight,
+              int64_t TopK) {
+    bool ret = false;
+    auto num_group = ng_nq_tpk.size();
+    auto topk = ng_nq_tpk[0][0].ids.size();
+    std::vector<const int64_t*> p_ids(num_group, 0);
+    std::vector<const float*> p_dists(num_group, 0);
+    std::vector<NRANode> nodes;
+    std::unordered_map<int64_t, size_t> hash_tbl;
+
+    float cur_max_estimate_value = 0.0;
+    auto cmp = [&](size_t i, size_t j) {
+        return nodes[i].lb > nodes[j].lb;
+    };
+    std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
+    for (auto i = 0; i < num_group; ++i) {
+        p_ids[i] = ng_nq_tpk[i][0].ids.data();
+        p_dists[i] = ng_nq_tpk[i][0].distances.data();
+    }
+
+    auto scan_cur_line = [&](int line){
+        cur_max_estimate_value = 0.0;
+        for (auto i = 0; i < num_group; ++i) {
+            auto cur_id = p_ids[i][line];
+            auto target = hash_tbl.find(cur_id);
+            cur_max_estimate_value += (p_dists[i][line] * weight[i]);
+            size_t pos;
+            if (target != hash_tbl.end()) {
+                pos = target->second;
+                nodes[pos].lb += (p_dists[i][line] * weight[i]);
+            } else {
+                pos = nodes.size();
+                nodes.emplace_back(cur_id, (p_dists[i][line] * weight[i]), 0, false, num_group);
+                hash_tbl[cur_id] = pos;
+            }
+            nodes[pos].group_flags[i] = true;
+        }
+    };
+    auto maintainUb = [&]() {
+        // maintain previous record ub
+        auto node_size = nodes.size();
+        auto last_line_id = topk;
+        for (auto& node :nodes) node.ub = node.lb;
+
+        //#pragma omp parallel for
+        for (int j = 0; j < node_size; ++j) {
+            for (auto i = 0; i < num_group; ++i) {
+                if (nodes[j].group_flags[i]) continue;
+                nodes[j].ub += p_dists[i][last_line_id - 1] * weight[i];
+            }
+        }
+    };
+    auto findOtherUb = [&]() {
+        // find unselected upper bound value
+        float max_unselected_ub = std::numeric_limits<float>::min();
+        bool find_flag = false;
+        for (auto& node: nodes) {
+            if (!node.result_flag) {
+                max_unselected_ub = std::max(max_unselected_ub, node.ub);
+                find_flag = true;
+            }
+        }
+        if (!find_flag)
+            max_unselected_ub = std::numeric_limits<float>::max();
+        return max_unselected_ub;
+    };
+    auto rankTopk = [&]() {
+        for (auto i = 0; i < nodes.size(); ++i) {
+            result_set.emplace(i);
+            nodes[i].result_flag = true;
+            if (result_set.size() > TopK) {
+                nodes[result_set.top()].result_flag = false;
+                result_set.pop();
+            }
+        }
+    };
+    // judge exit condition
+    for (auto line = 0; line < topk; ++line) {
+        scan_cur_line(line);
+        maintainUb();
+        rankTopk();
+        ret = (nodes[result_set.top()].lb >= findOtherUb());
+        if (ret) break;
+    }
+
+    // organize result set
+    auto tot_size = result_set.size();
+    result.ids.resize(tot_size);
+    result.distances.resize(tot_size);
+    while (!result_set.empty()) {
+        --tot_size;
+        result.ids[tot_size] = nodes[result_set.top()].id;
+        result.distances[tot_size] = nodes[result_set.top()].lb;
+        result_set.pop();
+    }
+    return ret;
+}
 
 bool
 NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
@@ -455,7 +557,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
     };
     std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
     std::vector<size_t> new_nodes;
-    for(auto i = 0; i< num_group; ++i) {
+    for (auto i = 0; i < num_group; ++i) {
         p_ids[i] = ng_nq_tpk[i][0].ids.data();
         p_dists[i] = ng_nq_tpk[i][0].distances.data();
     }
@@ -489,7 +591,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         auto last_line_id = topk;
         for (auto& node :nodes) node.ub = node.lb;
         // todo: check it
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int j = 0; j < node_size; ++j) {
             for (auto i = 0; i < num_group; ++i) {
                 if (nodes[j].group_flags[i]) continue;
@@ -540,10 +642,10 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
 }
 
 bool
-NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
-                          milvus::QueryResult &result,
-                          const std::vector<float> &weight,
-                          int64_t TopK) {
+NRAPerformance(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
+               milvus::QueryResult& result,
+               const std::vector<float>& weight,
+               int64_t TopK) {
     std::chrono::high_resolution_clock::time_point ts, te, t0, t1, tl0, tl1;
     ts = std::chrono::high_resolution_clock::now();
     long round1_duration, heap_duration, hash_duration;
@@ -551,13 +653,15 @@ NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
     bool ret = false;
     auto num_group = ng_nq_tpk.size();
     auto topk = ng_nq_tpk[0][0].ids.size();
-    std::vector<const int64_t *> p_ids(num_group, 0);
-    std::vector<const float *> p_dists(num_group, 0);
+    std::vector<const int64_t*> p_ids(num_group, 0);
+    std::vector<const float*> p_dists(num_group, 0);
     std::vector<NRANode> nodes;
     std::unordered_map<int64_t, size_t> hash_tbl;
 
     float cur_max_estimate_value = 0.0;
-    auto cmp = [&](size_t i, size_t j) { return nodes[i].lb > nodes[j].lb; };
+    auto cmp = [&](size_t i, size_t j) {
+        return nodes[i].lb > nodes[j].lb;
+    };
     std::priority_queue<size_t, std::vector<size_t>, decltype(cmp)> result_set(cmp);
     std::vector<size_t> tmp_queue;
     tl0 = std::chrono::high_resolution_clock::now();
@@ -630,7 +734,8 @@ NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
                 hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
             }
             // maintain TopK results
-            if (!nodes[pos].result_flag && nodes[pos].id > 0 && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
+            if (!nodes[pos].result_flag && nodes[pos].id > 0
+                && (result_set.size() < TopK || nodes[pos].lb > nodes[result_set.top()].lb)) {
                 nodes[pos].result_flag = true;
                 t0 = std::chrono::high_resolution_clock::now();
                 result_set.push(pos);
@@ -653,14 +758,14 @@ NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
             nodes[pos].group_flags[i] = true;
             ++nodes[pos].occurs_time;
         }
-        for (auto &new_node_id :new_boy)
+        for (auto& new_node_id :new_boy)
             nodes[new_node_id].ub = cur_max_estimate_value;
         new_boy.clear();
 
         // find unselected upper bound value
         max_unselected_ub = std::numeric_limits<float>::min();
         bool find_flag = false;
-        for (auto &node: nodes) {
+        for (auto& node: nodes) {
             if (!node.result_flag) {
                 max_unselected_ub = std::max(max_unselected_ub, node.ub);
                 find_flag = true;
@@ -713,10 +818,12 @@ NRAPerformance(const std::vector<milvus::TopKQueryResult> &ng_nq_tpk,
         hash_duration += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
     }
     te = std::chrono::high_resolution_clock::now();
-    std::cout << "organize result set costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - t0).count() << " ms." << std::endl;
+    std::cout << "organize result set costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - t0).count()
+              << " ms." << std::endl;
     std::cout << "hash costs: " << hash_duration << " ms." << std::endl;
     std::cout << "heap costs: " << heap_duration << " ms." << std::endl;
-    std::cout << "nra total costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - ts).count() << " ms." << std::endl;
+    std::cout << "nra total costs: " << std::chrono::duration_cast<std::chrono::microseconds>(te - ts).count() << " ms."
+              << std::endl;
     return ret;
 }
 } // namespace multivector
