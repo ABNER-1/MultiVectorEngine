@@ -1,12 +1,12 @@
 {
   "group_num": 2,
   "base_data_locations": [
-    "/root/vector/data_img.txt",
-    "/root/vector/data_rec.txt"
+    "/data/vector/results_train/data_img.txt",
+    "/data/vector/results_train/data_rec.txt"
   ],
   "query_data_locations": [
-    "/root/vector/query/data_img.txt",
-    "/root/vector/query/data_rec.txt"
+    "/data/vector/results_test/data_img.txt",
+    "/data/vector/results_test/data_rec.txt"
   ],
   "dimensions": [
     1024,

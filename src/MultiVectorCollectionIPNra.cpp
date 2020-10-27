@@ -185,7 +185,10 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
             tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
         }
     }
+    std::cout<<"188"<<std::endl;
     auto cal_baseline = [&]() {
+	std::vector<int64_t> dims = {1024, 1024};
+	std::cout<<"190"<<std::endl;
         std::set<int64_t> target_ids;
         for (auto i = 0; i < child_collection_names_.size(); ++i) {
             for (auto j = 0; j < mx_size; ++j) {
@@ -197,6 +200,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
         for (auto &id : target_ids) {
             tids.push_back(id);
         }
+	std::cout<<"202"<<std::endl;
 //        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
 //        for (auto i = 0; i < child_collection_names_.size(); ++i) {
 //            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
@@ -208,22 +212,25 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
         for (auto i = 0; i < tids.size(); ++ i) {
             float dist = 0;
             for (auto j = 0; j < child_collection_names_.size(); j ++) {
-                float d = distfunc(entity_query[j].float_data.data(), raw_data[tids[i]][j].float_data.data(), &dimensions_[j]);
+                float d = distfunc(entity_query[j].float_data.data(), raw_data[tids[i]][j].float_data.data(), &dims[j]);
                 dist += d * weight[j];
             }
             result_set.emplace(dist, tids[i]);
             if (result_set.size() > topk)
                 result_set.pop();
         }
+	std::cout<<"221"<<std::endl;
         query_results.ids.resize(topk);
         query_results.distances.resize(topk);
         size_t res_num = result_set.size();
+	std::cout<<"225"<<std::endl;
         while (!result_set.empty()) {
             res_num--;
             query_results.ids[res_num] = result_set.top().second;
             query_results.distances[res_num] = result_set.top().first * -1;
             result_set.pop();
         }
+	std::cout<<"232"<<std::endl;
         return Status::OK();
     };
 
