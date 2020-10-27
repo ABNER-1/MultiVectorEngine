@@ -185,10 +185,9 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
             tqrs[i][0].distances.resize(mx_size, std::numeric_limits<float>::max());
         }
     }
-    std::cout<<"188"<<std::endl;
+
     auto cal_baseline = [&]() {
 	std::vector<int64_t> dims = {1024, 1024};
-	std::cout<<"190"<<std::endl;
         std::set<int64_t> target_ids;
         for (auto i = 0; i < child_collection_names_.size(); ++i) {
             for (auto j = 0; j < mx_size; ++j) {
@@ -200,7 +199,6 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
         for (auto &id : target_ids) {
             tids.push_back(id);
         }
-	std::cout<<"202"<<std::endl;
 //        std::vector<std::vector<Entity>> entities(child_collection_names_.size(), std::vector<Entity>());
 //        for (auto i = 0; i < child_collection_names_.size(); ++i) {
 //            conn_ptr_->GetEntityByID(child_collection_names_[i], tids, entities[i]);
@@ -219,18 +217,15 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
             if (result_set.size() > topk)
                 result_set.pop();
         }
-	std::cout<<"221"<<std::endl;
         query_results.ids.resize(topk);
         query_results.distances.resize(topk);
         size_t res_num = result_set.size();
-	std::cout<<"225"<<std::endl;
         while (!result_set.empty()) {
             res_num--;
             query_results.ids[res_num] = result_set.top().second;
             query_results.distances[res_num] = result_set.top().first * -1;
             result_set.pop();
         }
-	std::cout<<"232"<<std::endl;
         return Status::OK();
     };
 
@@ -255,7 +250,7 @@ MultiVectorCollectionIPNra::SearchBase(const std::vector<float> &weight,
                 extra_params["ef"] = topk;
         }
         auto stat = SearchImpl(weight, entity_array[q], topk, extra_params.dump(), topk_query_results[q], row_data);
-        topks.push_back((int) (topk));
+        // topks.push_back((int) (topk));
     }
 
     return Status::OK();
