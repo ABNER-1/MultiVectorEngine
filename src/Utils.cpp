@@ -473,15 +473,11 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
                 nodes[pos].lb += (p_dists[i][line] * weight[i]);
             } else {
                 pos = nodes.size();
-                new_nodes.push_back(pos);
                 nodes.emplace_back(cur_id, (p_dists[i][line] * weight[i]), 0, false, num_group);
                 hash_tbl[cur_id] = pos;
             }
             nodes[pos].group_flags[i] = true;
         }
-        for (auto& new_node_id :new_nodes)
-            nodes[new_node_id].ub = cur_max_estimate_value;
-        new_nodes.clear();
     }
     auto maintainUb = [&]() {
         // maintain previous record ub
@@ -489,7 +485,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         auto last_line_id = topk;
         for (auto& node :nodes) node.ub = node.lb;
         // todo: check it
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int j = 0; j < node_size; ++j) {
             for (auto i = 0; i < num_group; ++i) {
                 if (nodes[j].group_flags[i]) continue;
@@ -513,11 +509,15 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
     };
     auto rankTopk = [&]() {
         for (auto i = 0; i < nodes.size(); ++i) {
-            result_set.emplace(i);
-            nodes[i].result_flag = true;
-            if (result_set.size() > TopK) {
+            if (result_set.size() < TopK) {
+               result_set.emplace(i);
+               nodes[i].result_flag = true;
+	    } else if(nodes[result_set.top()].lb < nodes[i].lb) {
                 nodes[result_set.top()].result_flag = false;
                 result_set.pop();
+                
+		result_set.emplace(i);
+                nodes[i].result_flag = true;
             }
         }
     };

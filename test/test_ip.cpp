@@ -151,16 +151,17 @@ main(int argc, char** argv) {
     Insert(engine);
     ivf_result_prefix = ip_config.at("ivf_result_prefix");
  //   hnsw_result_prefix = ip_config.at("hnsw_result_prefix");
-    std::vector<int> nlists = {16384};
+    //std::vector<int> nlists = {1024};
+    std::vector<int> nlists = {2048, 4096, 8192, 16384};
     std::vector<int> nprobes =
-        {1, 2, 3, 4, 5, 6,1, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
+        {1, 2, 3, 4, 5, 6, 1, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
 
-    int number = 300;
+    int number = 0;
     for (auto nlist : nlists) {
         CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
         for (auto nprobe : nprobes) {
             std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
-            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
+            auto result_file_name = ivf_result_prefix + std::to_string(nlist) + "-" + std::to_string(nprobe) + ".txt";
             nlohmann::json search_params = {{"nprobe", nprobe}};
             Search(engine, search_params, result_file_name);
             //auto topks = engine->GetActualTopk(collection_name);
