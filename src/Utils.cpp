@@ -478,17 +478,16 @@ StandardNRAIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
             nodes[pos].group_flags[i] = true;
         }
     };
-    auto maintainUb = [&]() {
+    auto maintainUb = [&](int line) {
         // maintain previous record ub
         auto node_size = nodes.size();
-        auto last_line_id = topk;
         for (auto& node :nodes) node.ub = node.lb;
 
         //#pragma omp parallel for
         for (int j = 0; j < node_size; ++j) {
             for (auto i = 0; i < num_group; ++i) {
                 if (nodes[j].group_flags[i]) continue;
-                nodes[j].ub += p_dists[i][last_line_id - 1] * weight[i];
+                nodes[j].ub += p_dists[i][line] * weight[i];
             }
         }
     };
@@ -507,21 +506,28 @@ StandardNRAIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         return max_unselected_ub;
     };
     auto rankTopk = [&]() {
+        // O(n log topk) vs O(topk log topk)
+        while(!result_set.empty()){
+            nodes[result_set.top()].result_flag = false;
+            result_set.pop();
+        }
         for (auto i = 0; i < nodes.size(); ++i) {
-            result_set.emplace(i);
-            nodes[i].result_flag = true;
-            if (result_set.size() > TopK) {
+            if (result_set.size() == TopK && nodes[result_set.top()].lb < nodes[i].lb ) {
                 nodes[result_set.top()].result_flag = false;
                 result_set.pop();
             }
+            result_set.emplace(i);
+            nodes[i].result_flag = true;
         }
     };
     // judge exit condition
     for (auto line = 0; line < topk; ++line) {
         scan_cur_line(line);
-        maintainUb();
+        maintainUb(line);
         rankTopk();
-        ret = (nodes[result_set.top()].lb >= findOtherUb());
+        auto min_lb = nodes[result_set.top()].lb;
+        auto max_other_ub = findOtherUb();
+        ret = ( min_lb >= max_other_ub);
         if (ret) break;
     }
 
@@ -591,7 +597,7 @@ NoRandomAccessAlgorithmIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
         auto last_line_id = topk;
         for (auto& node :nodes) node.ub = node.lb;
         // todo: check it
-#pragma omp parallel for
+//#pragma omp parallel for
         for (int j = 0; j < node_size; ++j) {
             for (auto i = 0; i < num_group; ++i) {
                 if (nodes[j].group_flags[i]) continue;
