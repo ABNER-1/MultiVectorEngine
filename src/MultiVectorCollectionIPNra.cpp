@@ -168,7 +168,7 @@ MultiVectorCollectionIPNra::SearchImpl(const std::vector<float> &weight,
     for (auto i = 0; i < child_collection_names_.size(); ++i) {
         std::vector<milvus::Entity> container;
         container.emplace_back(entity_query[i]);
-        int64_t search_topk = 2048;
+        int64_t search_topk = 4096;
         auto status =
             conn_ptr_->Search(child_collection_names_[i], partition_tags, container, search_topk, extra_params, tqrs[i]);
         if (!status.ok())

@@ -155,12 +155,12 @@ main(int argc, char **argv) {
         CreateIndex(engine, milvus::IndexType::IVFFLAT, {{"nlist", nlist}});
         for (auto nprobe : nprobes) {
             std::cout << number << " nlist: " << nlist << " ; nprobe: " << nprobe << std::endl;
-            auto result_file_name = ivf_result_prefix + std::to_string(++number) + ".txt";
+            auto result_file_name = ivf_result_prefix + std::to_string(nlist) + "-" + std::to_string(nprobe) + ".txt";
             nlohmann::json search_params = {{"nprobe", nprobe}};
-	    std::cout<< "row data size: " << row_data.size()<<std::endl;
+	    // std::cout<< "row data size: " << row_data.size()<<std::endl;
             Search(engine, search_params, result_file_name, row_data);
             auto topks = engine->GetActualTopk(collection_name);
-	    std::cout<< "row data size: " << row_data.size()<<std::endl;
+            // std::cout<< "row data size: " << row_data.size()<<std::endl;
 //            writeTopk(topks);
         }
         DropIndex(engine);

@@ -23,7 +23,7 @@
   "precision": 18,
   "metric_type": "IP",
   "strategy": "nra",
-  "ivf_result_prefix": "/root/ip-recipe/baseline2048/ip_result",
+  "ivf_result_prefix": "/root/ip-recipe/baseline4096/ip_result",
   "hnsw_result_prefix": "/root/ip-recipe/baseline/ip_result",
   "baseline_result": "./ip-recipe/baseline.txt",
   "use_base_query": false
