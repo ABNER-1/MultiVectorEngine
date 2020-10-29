@@ -516,8 +516,10 @@ StandardNRAIP(const std::vector<milvus::TopKQueryResult>& ng_nq_tpk,
                 nodes[result_set.top()].result_flag = false;
                 result_set.pop();
             }
-            result_set.emplace(i);
-            nodes[i].result_flag = true;
+	    if(result_set.size() < TopK){
+                result_set.emplace(i);
+                nodes[i].result_flag = true;
+	    }
         }
     };
     // judge exit condition

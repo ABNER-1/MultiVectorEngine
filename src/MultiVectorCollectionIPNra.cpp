@@ -265,8 +265,8 @@ MultiVectorCollectionIPNra::Search(const std::vector<float> &weight,
 #pragma omp parallel for
     for (int q = 0; q < entity_array.size(); ++q) {
         int64_t threshold, tpk;
-        tpk = std::max(topk, 50l);
-        threshold = 50;
+        tpk = std::max(topk, 2048l);
+        threshold = 2048;
         bool succ_flag = false;
         do {
             tpk = std::min(threshold, tpk * 2);

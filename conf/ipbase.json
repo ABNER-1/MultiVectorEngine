@@ -17,13 +17,13 @@
     0.5
   ],
   "batch": 40000,
-  "nq": 10,
+  "nq": 1000,
   "topk": 50,
   "nb": 880982,
   "precision": 18,
   "metric_type": "IP",
   "strategy": "nra",
-  "ivf_result_prefix": "/root/ip-recipe/baseline50/ip_result",
+  "ivf_result_prefix": "/root/ip-recipe/baseline2048/ip_result",
   "hnsw_result_prefix": "/root/ip-recipe/baseline/ip_result",
   "baseline_result": "./ip-recipe/baseline.txt",
   "use_base_query": false

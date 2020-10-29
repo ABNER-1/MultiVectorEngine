@@ -151,8 +151,8 @@ main(int argc, char** argv) {
     Insert(engine);
     ivf_result_prefix = ip_config.at("ivf_result_prefix");
  //   hnsw_result_prefix = ip_config.at("hnsw_result_prefix");
-    std::vector<int> nlists = {1024};
-//    std::vector<int> nlists = {1024, 2048, 4096 ,8192};
+    //std::vector<int> nlists = {1024};
+    std::vector<int> nlists = {1024, 4096 ,8192, 16384};
     std::vector<int> nprobes =
         {1, 2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30, 60, 80, 120, 240, 360, 480, 512, 1024, 2048, 4096};
 
